@@ -112,6 +112,10 @@ ICUpropH <- dplyr::filter(uruOutcomeDf, outcome=="Critical" &
                          study=="Fitted")[["percentageH"]]
 saturationFluxH <- ICUbeds/(medianICUstay*ICUpropH/100)
 
+ICUpropL <- dplyr::filter(uruOutcomeDf, outcome=="Critical" &
+                         study=="Fitted")[["percentageL"]]
+saturationFluxL <- ICUbeds/(medianICUstay*ICUpropL/100)
+
 ##################################
 # Write down and export Uruguay reported
 # figures
