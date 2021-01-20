@@ -106,7 +106,6 @@ write.csv(criticalFatalityICNARC, "../data/0_icu_letality_literature.csv",
 ###############################
 
 # Globlal letality reported in different studies
-
 severeFatalityDf <- data.frame(letalityHosp = c(24.9, 21, 25.7, 22, 18.1, 4.4),
                                  study = c("Westblade", "Richardson", "RECOVERY",
                                            "Karagiannidis", "Salje", "Xia"))
@@ -177,6 +176,27 @@ severeFatalitySalje <- data.frame(age = agesVec,
 
 letalitySevereDf <- rbind(severeFatalityRichardson, severeFatalityKaragiannidis,
                      severeFatalitySalje)
+
+# Palaiodimos (minority population, overrepresented in obesity)
+agesVec <- c("30-50", "51-64", "65-73", "74+")
+hospitalizedVec <- c(51, 53, 46, 50)
+deathsVec <- c(6, 12, 10, 20)
+letalityVec <- NULL
+letalityVecL <- NULL
+letalityVecH <- NULL
+for (l in c(1:length(deathsVec))) {
+  result <- binom.test(deathsVec[l], hospitalizedVec[l])
+  letalityVec[l] <- result$estimate * 100
+  letalityVecL[l] <- result$conf.int[1] * 100
+  letalityVecH[l] <- result$conf.int[2] * 100
+}
+severeFatalityPalaiodimos <- data.frame(age = agesVec,
+                                 letality = letalityVec,
+                                 letalityL = letalityVecL,
+                                 letalityH = letalityVecH,
+                                 study = "Palaiodimos")
+
+
 
 write.csv(letalitySevereDf, "../data/0_hospitalized_letality_literature.csv",
           row.names=FALSE)

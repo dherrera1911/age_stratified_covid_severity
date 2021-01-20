@@ -42,8 +42,7 @@ fit_to_lit_proportions <- function(proportionDf, newBins, mixed=FALSE) {
   # fit model
   proportionDf <- dplyr::filter(proportionDf, outcome > 0)
   if (mixed) {
-    outcomeModel <- lmer(log(outcome) ~ meanAge + (meanAge+0|study) +
-                         (1|study), data=proportionDf)
+    outcomeModel <- lmer(log(outcome) ~ meanAge + (1|study), data=proportionDf)
     predictions <- predict(outcomeModel, ageData, re.form=NA)
   } else {
     outcomeModel <- lm(log(outcome) ~ meanAge, data=proportionDf)
@@ -111,9 +110,9 @@ plot_literature_outcome <- function(literatureDf, title=NA, escalaLog=TRUE,
     geom_line(size=0.6, linetype = "dashed") +
     geom_ribbon(aes(ymin = outcomeL, ymax = outcomeH), alpha = 0.2, colour=NA,
                 show.legend=FALSE) +
-    xlab("Edad") +
+    xlab("Age") +
     ylab("% infectados evento") +
-    labs(color = "Estudio") +
+    labs(color = "Study") +
     theme_bw()
   if (!is.na(colorVec)) {
     outcomePlot <- outcomePlot +
@@ -131,4 +130,58 @@ plot_literature_outcome <- function(literatureDf, title=NA, escalaLog=TRUE,
   }
   return(outcomePlot)
 }
+
+
+# for each age in agesVec, look for its bin in binsVec,
+# and assign the corresponding proportion. Return
+# a vector with the corresponding proportion for each age
+assign_bin_prop <- function(agesVec, binsVec, propVec) {
+  ageBin <- bin_ages(agesVec, as.character(binsVec))
+  binProp <- propVec[ageBin]
+  return(binProp)
+}
+
+
+# take a vector with numbers and bin them as given in
+# binsVec. binsVec can be a character vector indicating
+# the ranges as "Xi-Xf" or a numeric vector indicating
+# the superior limits of the bins
+bin_ages <- function(agesVec, binsVec) {
+  if (is.character(binsVec)) {
+    ageBins <- strsplit(binsVec, "-") %>%
+      lapply(., as.numeric) %>%
+      unlist(.)
+    supInd <-seq(2, length(ageBins), by = 2)
+    ageBins <- ageBins[supInd]
+    if (any(is.na(ageBins))) {
+      ageBins <- ageBins[-which(is.na(ageBins))]
+    }
+    ageBins <- c(-1, ageBins, 200)
+  } else {
+    ageBins <- binsVec
+  }
+  indVec <- .bincode(agesVec, ageBins)
+  return(indVec)
+}
+
+
+count_df_confints <- function(outcomeCountDf) {
+  columns <- c("Hosp", "ICU", "Deaths")
+  columns <- columns[columns %in% colnames(outcomeCountDf)]
+  caseCount <- outcomeCountDf$Cases
+  for (col in columns) {
+    colCount <- outcomeCountDf[[col]]
+    colProp <- colCount/caseCount
+    colCI <- binomial_confint(caseCount, colCount)
+    propName <- paste("prop", col, sep="")
+    propNameL <- paste("prop", col, "_L", sep="")
+    propNameH <- paste("prop", col, "_H", sep="")
+    outcomeCountDf[[propName]] <- colProp*100
+    outcomeCountDf[[propNameL]] <- colCI$lower*100
+    outcomeCountDf[[propNameH]] <- colCI$upper*100
+  }
+  return(outcomeCountDf)
+}
+
+
 

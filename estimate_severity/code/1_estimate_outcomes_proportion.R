@@ -33,14 +33,17 @@ ifrLiterature <- read.csv("../data/0_ifr_literature.csv", stringsAsFactors=FALSE
 # Age strata to return in the fit
 standardAges <- c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
             "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69",
-            "70-74", "75-79", "80+") 
+            "70-74", "75-79", "80-84", "85-89", "90+") 
+#uruEpiAges <- c("0-14", "15-24", "25-34", "35-44", "45-54", "55-64",
+#            "65-74", "75+")
 
 ####################
 # Fit a linear model to the hospital letality literature
 ####################
 
 letalityHospFit <- dplyr::filter(hospLetality, letality > 0) %>%
-  lm(log(letality) ~ meanAge, weights = weight, data = .)
+  #lm(log(letality) ~ meanAge, weights = weight, data = .)
+  lm(log(letality) ~ meanAge, data = .)
 
 # Put the fitted letality in a data.frame with the literature letalities
 tempLetality <- data.frame(age = standardAges, meanAge = mid_bin_age(standardAges))
@@ -99,6 +102,34 @@ criticalFit <- dplyr::mutate(estimatedProps, outcome=critical,
 severeFit <- dplyr::mutate(estimatedProps, outcome=severe,
                              meanAge=mid_bin_age(age)) %>%
   fit_to_lit_proportions(., standardAges)
+
+# Export the fitted models
+modelList <- list(ifr=ifrFit$model, critical=criticalFit$model,
+                  severe=severeFit$model)
+saveRDS(modelList, "../data/1_fitted_models.Rds")
+
+#ifrFitUru <- dplyr::mutate(estimatedProps, outcome=IFR,
+#                        meanAge=mid_bin_age(age)) %>%
+#  fit_to_lit_proportions(., uruEpiAges)
+#ifrFitUru <- ifrFitUru$prediction %>%
+#  dplyr::mutate(., desenlace="Death")
+#criticalFitUru <- dplyr::mutate(estimatedProps, outcome=critical,
+#                             meanAge=mid_bin_age(age)) %>%
+#  fit_to_lit_proportions(., uruEpiAges)
+#criticalFitUru <- criticalFitUru$prediction %>%
+#  dplyr::mutate(., desenlace="ICU")
+#severeFitUru <- dplyr::mutate(estimatedProps, outcome=severe,
+#                             meanAge=mid_bin_age(age)) %>%
+#  fit_to_lit_proportions(., uruEpiAges)
+#severeFitUru <- severeFitUru$prediction %>%
+#  dplyr::mutate(., desenlace="Hospitalized")
+
+
+#uruCasesDemOutcomes <- rbind(ifrFitUru, criticalFitUru, severeFitUru) %>%
+#  dplyr::mutate(., outcome=exp(outcome), outcomeL=exp(outcomeL),
+#                outcomeH=exp(outcomeH))
+#write.csv(uruCasesDemOutcomes, "../data/1_fitted_outcomes_epiUru_dem.csv",
+#          row.names=FALSE)
 
 # Put our estimates and fitted values together with
 # previous literature estimates
