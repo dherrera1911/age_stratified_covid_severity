@@ -49,24 +49,6 @@ uruDf$Cases <- uruN18Dec
 uruDf$CaseProp <- uruProp18Dec
 
 ################
-# Canada
-################
-# case demographics Canada from December 18
-# https://health-infobase.canada.ca/covid-19/epidemiological-summary-covid-19-cases.html
-
-#ageVecCan <- c("0-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79","80+")
-#canN <- c(68871, 81122, 67776, 63457, 58253, 37148, 22739, 37266)
-#canProp <- 100*canN/sum(canN)
-#canDeaths <- c(3, 18, 33, 90, 341, 995, 2518, 9581)
-#canICU <- c(59, 152, 251, 464, 971, 1371, 1289, 701)
-#canHosp <- c(425, 870, 1404, 1963, 3425, 4535, 5691, 8961)
-#canCountDf <- data.frame(country="Canada", age=ageVecCan, Cases=canN,
-#                         CaseProp=canProp, Hosp=canHosp,
-#                         ICU=canICU, Deaths=canDeaths)
-## calculated confints
-#canDf <- count_df_confints(canCountDf)
-
-################
 # New Zealand
 ################
 # case demographics New Zealand from, January 3
@@ -75,13 +57,12 @@ uruDf$CaseProp <- uruProp18Dec
 ageVecNZ <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
                 "60-69", "70-79", "80-89", "90+")
 nzN <- c(92, 196, 517, 395, 308, 319, 222, 91, 32, 9)
-nzProp <- 100*nzN/sum(nzN)
-nzDeaths <- c(0, 0, 0, 0, 0,   2,  3,  7,  8, 5)
-nzICU <-    c(0, 1, 1, 1, 3,   4,  6,  10, 8, 5)
+#nzProp <- 100*nzN/sum(nzN)
+nzDeaths <- c(0, 0, 0, 0, 0, 2,  3,  7,  8, 5)
+nzICU <-    c(0, 1, 1, 1, 3, 4,  6,  10, 8, 5)
 nzHosp <-   c(1, 3, 7, 16, 16, 29, 27, 27, 16, 9)
 nzCountDf <- data.frame(country="New Zealand", age=ageVecNZ, Cases=nzN,
-                         CaseProp=nzProp, Hosp=nzHosp,
-                         ICU=nzICU, Deaths=nzDeaths)
+                         Hosp=nzHosp, ICU=nzICU, Deaths=nzDeaths)
 # calculated confints
 nzDf <- count_df_confints(nzCountDf)
 
@@ -100,6 +81,22 @@ icelandCountDf <- data.frame(country="Iceland", age=ageVecIceland,
                        Cases=icelandN, CaseProp=icelandProp,
                        Deaths=icelandDeaths)
 icelandDf <- count_df_confints(icelandCountDf)
+
+######################
+# South korea
+######################
+# analysis on disease severity extracted from:
+# https://www.thelancet.com/journals/lanwpc/article/PIIS2666-6065(20)30061-4/fulltext
+ageVecKorea <- c("0-10", "10-19", "20-29", "30-39", "40-49", "50-59",
+            "60-69", "70-79", "80+")
+koreaN <- c(89, 397, 2174, 780, 1037, 1490, 1007, 517, 312)
+koreaProp <- koreaN/sum(koreaN)*100
+koreaICU <- c(0, 0, 2, 4, 2, 26, 50, 82, 117)
+koreaHosp <- c(0, 1, 19, 14, 32, 128, 174, 199, 189)
+koreaCountDf <- data.frame(country="South Korea", age=ageVecKorea,
+                       Cases=koreaN, CaseProp=koreaProp,
+                       ICU=koreaICU, Hosp=koreaHosp)
+koreaDf <- count_df_confints(koreaCountDf)
 
 ################
 # Spain
@@ -166,22 +163,6 @@ spainCountDf <- data.frame(country="Spain", age=ageVecSpain,
 spainDf <- count_df_confints(spainCountDf)
 
 ######################
-# South korea
-######################
-# analysis on disease severity extracted from:
-# https://www.thelancet.com/journals/lanwpc/article/PIIS2666-6065(20)30061-4/fulltext
-ageVecKorea <- c("0-10", "10-19", "20-29", "30-39", "40-49", "50-59",
-            "60-69", "70-79", "80+")
-koreaN <- c(89, 397, 2174, 780, 1037, 1490, 1007, 517, 312)
-koreaProp <- koreaN/sum(koreaN)*100
-koreaICU <- c(0, 0, 2, 4, 2, 26, 50, 82, 117)
-koreaHosp <- c(0, 1, 19, 14, 32, 128, 174, 199, 189)
-koreaCountDf <- data.frame(country="South Korea", age=ageVecKorea,
-                       Cases=koreaN, CaseProp=koreaProp,
-                       ICU=koreaICU, Hosp=koreaHosp)
-koreaDf <- count_df_confints(koreaCountDf)
-
-######################
 # Ireland
 ######################
 # Outcome data from: July 6th
@@ -206,9 +187,9 @@ irelandPopF <- dplyr::filter(popF, name=="Ireland") %>%
 irelandPop <- data.frame(age=irelandPopM$age,
                        pop=(irelandPopM[["2020"]]+irelandPopF[["2020"]])*1000)
 irelandPop$proportion <- irelandPop$pop # rename pop to proportion so function works 
-irelandPop <- change_demography_bins(irelandPop, c("0-19", ageVecIreland, "70+")) %>%
+irelandPop <- change_demography_bins(irelandPop, c("0-14", outcomeAgesIreland, "65+")) %>%
   rename(., pop=proportion) %>%
-  dplyr::filter(., !(age %in% c("0-19", "70+")))
+  dplyr::filter(., !(age %in% c("0-14", "65+")))
 
 irelandN <- round(irelandPop$pop*irelandSeroprev/100)
 irelandProp <- irelandN/sum(irelandN)*100
@@ -223,39 +204,34 @@ irelandDf <- count_df_confints(irelandCountDf)
 # Portugal
 ######################
 # Outcome data from: July 6th
-# https://www.hpsc.ie/a-z/respiratory/coronavirus/novelcoronavirus/casesinportugal/epidemiologyofcovid-19inportugal/july2020/
+# https://covid19.min-saude.pt/relatorio-de-situacao/
 # Seroprevalence data from:
-# https://www.hpsc.ie/a-z/respiratory/coronavirus/novelcoronavirus/scopi/SCOPI%20report%20preliminary%20results%20final%20version.pdf
+# http://www.insa.min-saude.pt/resultados-preliminares-do-primeiro-inquerito-serologico-nacional-covid-19-relatorio/
 
-outcomeAgesPortugal <- c("1-9", "10-19", "20-39", "40-59", "60+")
-portugalDeaths <- c(1, 5, 11, 23, 64)
-portugalICU <- c(5, 15, 35, 92, 126)
-portugalHosp <- c(72, 197, 267, 447, 492)
-
-ageVecPortugal <- c("1-9", "10-19", "20-39", "40-59", "60+")
-portugalSeroprev <- c(2.9, 2.2, 2.9, 3.2, 2.9)
-portugalSeroprevL <- c(1.3, 0.8, 1.2, 1.5, 1.5)
-portugalSeroprevH <- c(6.2, 5.5, 7.0, 6.7, 5.3)
-
-portugalPopM <- dplyr::filter(popM, name=="Portugal") %>%
-  dplyr::select(., age, "2020")
-portugalPopF <- dplyr::filter(popF, name=="Portugal") %>%
-  dplyr::select(age, "2020")
-portugalPop <- data.frame(age=portugalPopM$age,
-                       pop=(portugalPopM[["2020"]]+portugalPopF[["2020"]])*1000)
-portugalPop$proportion <- portugalPop$pop # rename pop to proportion so function works 
-portugalPop <- change_demography_bins(portugalPop, c("0-19", ageVecPortugal, "70+")) %>%
-  rename(., pop=proportion) %>%
-  dplyr::filter(., !(age %in% c("0-19", "70+")))
-
-portugalN <- round(portugalPop$pop*portugalSeroprev/100)
-portugalProp <- portugalN/sum(portugalN)*100
-
-portugalCountDf <- data.frame(country="Portugal", age=ageVecPortugal,
-                       Cases=portugalN, CaseProp=portugalProp,
-                       Deaths=portugalDeaths, ICU=portugalICU,
-                       Hosp=portugalHosp)
-portugalDf <- count_df_confints(portugalCountDf)
+#ageVecPortugal <- c("1-9", "10-19", "20-39", "40-59", "60+")
+#portugalSeroprev <- c(2.9, 2.2, 2.9, 3.2, 2.9)
+#portugalSeroprevL <- c(1.3, 0.8, 1.2, 1.5, 1.5)
+#portugalSeroprevH <- c(6.2, 5.5, 7.0, 6.7, 5.3)
+#
+#portugalPopM <- dplyr::filter(popM, name=="Portugal") %>%
+#  dplyr::select(., age, "2020")
+#portugalPopF <- dplyr::filter(popF, name=="Portugal") %>%
+#  dplyr::select(age, "2020")
+#portugalPop <- data.frame(age=portugalPopM$age,
+#                       pop=(portugalPopM[["2020"]]+portugalPopF[["2020"]])*1000)
+#portugalPop$proportion <- portugalPop$pop # rename pop to proportion so function works 
+#portugalPop <- change_demography_bins(portugalPop, c("0-19", ageVecPortugal, "70+")) %>%
+#  rename(., pop=proportion) %>%
+#  dplyr::filter(., !(age %in% c("0-19", "70+")))
+#
+#portugalN <- round(portugalPop$pop*portugalSeroprev/100)
+#portugalProp <- portugalN/sum(portugalN)*100
+#
+#portugalCountDf <- data.frame(country="Portugal", age=ageVecPortugal,
+#                       Cases=portugalN, CaseProp=portugalProp,
+#                       Deaths=portugalDeaths, ICU=portugalICU,
+#                       Hosp=portugalHosp)
+#portugalDf <- count_df_confints(portugalCountDf)
 
 
 ######################
@@ -298,7 +274,6 @@ swedenCountDf <- data.frame(country="Sweden", age=ageVecSweden,
                        Cases=swedenN, CaseProp=swedenProp,
                        Deaths=swedenDeaths, ICU=swedenICU)
 swedenDf <- count_df_confints(swedenCountDf)
-
 
 ######################
 # France
@@ -382,40 +357,132 @@ englandDf <- count_df_confints(englandCountDf)
 
 
 ######################
-# England
+# Netherlands
 ######################
-# ICU data ICNARC report on COVID-19 in critical care 03 July 2020
-# Population from Levin et al
-# Hospital data https://coronavirus.data.gov.uk/details/download
-icuAgeVec <- c("16-30", "30-39", "40-49", "50-59", "60-69", "70-79", "80+")
-totICUEng <- 13025
-propICUEng <- c(2.2, 5.8, 13.7, 27.7, 29.7, 18.0, 2.9)
-nICUEng <- round(propICUEng/100*totICUEng)
+# Hospital data https://data.rivm.nl/geonetwork/srv/dut/catalog.search#/metadata/2c4357c8-76e4-4662-9574-1deb8a73f724?tab=general
+# More death data: https://www.rivm.nl/coronavirus-covid-19/grafieken
+# Seroprevalence estimatesfirst week april: Nationwide seroprevalence of SARS-CoV-2 andidentification of risk factors in the general populationof the Netherlands during thefirst epidemic wave
+# Seroprevalence 2 https://www.rivm.nl/en/pienter-corona-study/results
 
-seroprevAgeVecEng <- c("18-24", "25-34", "35-44", "45-54", "55-64",
-                       "65-74", "75+")
-englandSeroprev <- c(7.9, 7.8, 6.1, 6.4, 5.9, 3.2, 3.3)
-englandSeroprevL <- c(7.3, 7.4, 5.7, 6.0, 5.5, 2.8, 2.9)
-englandSeroprevH <- c(8.5, 8.3, 6.6, 6.9, 6.4, 3.6, 3.8)
+hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.csv",
+                       stringsAsFactors=FALSE, sep=";") %>%
+  as_tibble(.) %>%
+  dplyr::filter(., (Hospital_admission=="Yes" | Deceased=="Yes") &
+                (lubridate::date(Date_statistics)<="2020-07-01")) %>%
+  group_by(., Agegroup) %>%
+  summarize(., nHosp=sum((Hospital_admission=="Yes" | Deceased=="Yes")),
+            nDead=sum(Deceased=="Yes"),
+            nonHospDead=sum(Deceased=="Yes" & Hospital_admission=="No")) %>%
+  dplyr::filter(., !(Agegroup %in% c("<50", "Unknown")))
 
-englandPop <- c(4746616, 7609363, 7147939, 7623273, 6782486, 5576066,
-                4777650)
+seroprevAgeVecNL <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
+                "60-69", "70-79", "80-89", "90+")
+netherlandsSeroprev <- c(0.5, 6.0, 7.8, 3.6, 3.6, 5.0, 4.0, 3.6, 6.0, 8.6)
 
-englandN <- round(englandPop*englandSeroprev/100)
-englandProp <- englandN/sum(englandN)*100
+netherlandsPopM <- dplyr::filter(popM, name=="Netherlands") %>%
+  dplyr::select(., age, "2020")
+netherlandsPopF <- dplyr::filter(popF, name=="Netherlands") %>%
+  dplyr::select(age, "2020")
+netherlandsPop <- data.frame(age=netherlandsPopM$age,
+                       pop=(netherlandsPopM[["2020"]]+netherlandsPopF[["2020"]])*1000)
+netherlandsPop$proportion <- netherlandsPop$pop # rename pop to proportion so function works 
+netherlandsPop <- change_demography_bins(netherlandsPop, c(seroprevAgeVecNL)) %>%
+  rename(., pop=proportion)
 
-englandCountDf <- data.frame(country="England", age=seroprevAgeVecEng,
-                       Cases=englandN, CaseProp=englandProp,
-                       ICU=nICUEng)
-englandDf <- count_df_confints(englandCountDf)
+netherlandsN <- round(netherlandsPop$pop*netherlandsSeroprev/100)
+netherlandsProp <- netherlandsN/sum(netherlandsN)*100
 
+netherlandsCountDf <- data.frame(country="Netherlands", age=seroprevAgeVecNL,
+                       Cases=netherlandsN, CaseProp=netherlandsProp,
+                       Hosp=hospDataNL$nHosp, Deaths=hospDataNL$nDead)
+netherlandsDf <- count_df_confints(netherlandsCountDf)
+
+
+######################
+# Georgia, USA
+######################
+# Hospital data https://www.fultoncountyga.gov/covid-19/epidemiology-reports
+# Hospital data2 "Characteristics and Risk Factors for Hospitalization
+# and Mortality among Persons with COVID-19 in Atlanta Metropolitan Area"
+# Paper data are until 31 May. 
+# Georgia pop from Levin et al
+icuAgeVec <- c("0-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
+georgiaHosp <- c(18, 62, 79, 115, 172, 180, 260)
+georgiaICU <- c(4, 13, 14, 33, 44, 57, 74)
+georgiaDeaths <- c(2, 3, 2, 16, 33, 69, 170)
+nHosp31May <- 888
+
+georgiaHosp <- c(sum(georgiaHosp[2:3]), sum(georgiaHosp[4:5]))
+georgiaICU <- c(sum(georgiaICU[2:3]), sum(georgiaICU[4:5]))
+# remove ranges 0-17 and 65+ which include 0 in the interval,
+# following Levin et al
+seroprevAgeVecGeorgia <- c("18-49", "50-64")
+georgiaSeroprev <- c(3.3, 4.9)
+georgiaSeroprevL <- c(1.6, 6.4)
+georgiaSeroprevH <- c(1.8, 12.9)
+
+georgiaPop <- c(867468, 327713)
+
+georgiaN <- round(georgiaPop*georgiaSeroprev/100)
+georgiaProp <- georgiaN/sum(georgiaN)*100
+
+georgiaCountDf <- data.frame(country="Georgia", age=seroprevAgeVecGeorgia,
+                       Cases=georgiaN, CaseProp=georgiaProp,
+                       Hosp=georgiaHosp, ICU=georgiaICU)
+georgiaDf <- count_df_confints(georgiaCountDf)
+
+
+######################
+# New York City, USA
+######################
+# New York hospital data at 28 April
+# https://www1.nyc.gov/site/doh/covid/covid-19-data-archive.page
+# https://www1.nyc.gov/site/doh/covid/covid-19-data-totals.page#rates
+# Seroprev data from Rosenberg et al Cumulative incidence and diagnosis
+# of SARS-CoV-2 infection in New York
+# Demography https://www.baruch.cuny.edu/nycdata/population-geography/pop-demography.htm
+
+hospAgeVecNY <- c("0-17", "18-44", "45-64", "65-74", "75+")
+newyorkHosp <- c(273, 5695, 14156, 9240, 11212)
+newyorkDeaths <- c(5, 482, 2649, 2910, 5772)
+
+newYorkDemAgeVec <- c("0-5", "5-9", "10-14", "15-19",
+                      "20-24", "25-29", "30-34", "35-39", "40-44",
+                      "45-49", "50-54", "55-59", "60-64", "65-69",
+                      "70-74", "75-79", "80-84", "85+")
+newYorkPop <- c(553277, 496622, 467016, 466963, 588268, 804436,
+                728985, 625351, 550081, 553115, 553489, 530749,
+                464246, 388657, 265894, 199912, 139369, 161243)
+
+newYorkPop <- c(sum(newYorkPop[1:4]), sum(newYorkPop[5:9]),
+                sum(newYorkPop[10:13]), sum(newYorkPop[14:15]),
+                sum(newYorkPop[16:18]))
+
+# seroprev in paper
+ageVecSeroprevNY <- c("18-34", "35-44", "45-54", "55+")
+newyorkSeroprev <- c(21.8, 23.4, 26.5, 21.5)
+newyorkSeroprevL <- c(19.2, 20.6, 23.8, 19.6)
+newyorkSeroprevH <- c(24.4, 26.2, 29.2, 23.5)
+
+# extrapolated seroprev
+newyorkSeroprev <- c(21.8, 22.6, 26.5, 21.5, 21.5)
+
+newyorkN <- round(newYorkPop*newyorkSeroprev/100)
+newyorkProp <- newyorkN/sum(newyorkN)*100
+
+newyorkCountDf <- data.frame(country="New York, USA", age=hospAgeVecNY,
+                       Cases=newyorkN, CaseProp=newyorkProp,
+                       Hosp=newyorkHosp, Deaths=newyorkDeaths)
+newyorkDf <- count_df_confints(newyorkCountDf)
 
 
 ####################################
 # Put countries together and export
 ####################################
-countriesDf <- dplyr::bind_rows(uruDf, nzDf, koreaDf, icelandDf,
-                                spainDf, irelandDf)
+countriesDf <- dplyr::bind_rows(nzDf, koreaDf, icelandDf,
+                                spainDf, irelandDf, swedenDf, franceDf,
+                                englandDf, netherlandsDf, georgiaDf,
+                                newyorkDf)
 
 write.csv(countriesDf, "../data/2_countries_outcomes.csv", row.names=FALSE)
 
@@ -424,4 +491,4 @@ write.csv(countriesDf, "../data/2_countries_outcomes.csv", row.names=FALSE)
 #write.csv(uruIFR, "../data/2_uru_ifr_data.csv", row.names=FALSE)
 #write.csv(uruICU, "../data/2_uru_icu_data.csv", row.names=FALSE)
 #write.csv(uruHospital, "../data/2_uru_hospital_data.csv", row.names=FALSE)
-#
+

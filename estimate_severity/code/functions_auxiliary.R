@@ -103,12 +103,40 @@ binomial_confint <- function(countTotal, occurrences, input="count"){
 
 scaleFun <- function(x) sprintf("%1g", x)
 
-plot_literature_outcome <- function(literatureDf, title=NA, escalaLog=TRUE,
+plot_literature_outcome_line <- function(literatureDf, title=NA, escalaLog=TRUE,
                                     colorVec=NA) {
   outcomePlot <- ggplot(literatureDf, aes(x=meanAge, y=outcome,
                                      color=study, fill=study)) +
     geom_line(size=0.6, linetype = "dashed") +
     geom_ribbon(aes(ymin = outcomeL, ymax = outcomeH), alpha = 0.2, colour=NA,
+                show.legend=FALSE) +
+    xlab("Age") +
+    ylab("% infectados evento") +
+    labs(color = "Study") +
+    theme_bw()
+  if (!is.na(colorVec)) {
+    outcomePlot <- outcomePlot +
+      scale_colour_manual(values=colorVec) +
+      scale_fill_manual(values=colorVec)
+  }
+  if (escalaLog) {
+    outcomePlot <- outcomePlot +
+    scale_y_continuous(trans = 'log10', labels=scaleFun)
+  }
+  if (!is.na(title)) {
+    outcomePlot <- outcomePlot +
+      ggtitle(title) +
+      theme(plot.title = element_text(hjust = 0.5, size=10))
+  }
+  return(outcomePlot)
+}
+
+plot_literature_outcome_point <- function(literatureDf, title=NA, escalaLog=TRUE,
+                                    colorVec=NA) {
+  outcomePlot <- ggplot(literatureDf, aes(x=meanAge, y=outcome,
+                                     color=study, fill=study)) +
+    geom_point(size=1, linetype = "dashed") +
+    geom_errorbar(aes(ymin = outcomeL, ymax = outcomeH), alpha = 0.2, colour=NA,
                 show.legend=FALSE) +
     xlab("Age") +
     ylab("% infectados evento") +

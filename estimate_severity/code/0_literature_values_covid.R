@@ -20,7 +20,9 @@ source("./functions_auxiliary.R")
 ##########################################
 
 ##############################
+##############################
 # Age segregated IFR's
+##############################
 ##############################
 
 # O'Driscoll et. al. Meta-analysis
@@ -69,18 +71,20 @@ ifrDf <- rbind(ifrDriscoll, ifrBrazeau, ifrLevin)
 write.csv(ifrDf, "../data/0_ifr_literature.csv", row.names=FALSE)
 
 ###############################
+###############################
 # Letality among critical patients
+###############################
 ###############################
 
 # overall letality of some studies
 criticalFatalityDf <- data.frame(fatalityICU = c(62, 46.4, 44.3),
                                  study = c("Xu", "Veneces", "ICNARC"))
 
-# Letality by age in UK, ICNARC report
+# Letality by age in UK, ICNARC report for 9 September
 agesVec <- c("16-39", "40-49", "50-59", "60-69", "70-79", "80+")
 # absolute numbers are reported
-dischargedICU <- c(482, 750, 1268, 1054, 504, 85)
-diedICU <- c(103, 239, 782, 1146, 900, 132)
+dischargedICU <- c(734, 1131, 1982, 1689, 786, 137)
+diedICU <- c(131, 311, 991, 1467, 1145, 191)
 totalICU <- dischargedICU + diedICU
 letality <- NULL
 letalityL <- NULL
@@ -96,13 +100,188 @@ for (n in c(1:length(totalICU))) {
 criticalFatalityICNARC <- data.frame(age=agesVec,
                                      letality=letality,
                                      letalityL=letalityL,
-                                     letalityH=letalityH)
+                                     letalityH=letalityH,
+                                     ICU=totalICU,
+                                     Deaths=diedICU,
+                                     study="ICNARC")
 
-write.csv(criticalFatalityICNARC, "../data/0_icu_letality_literature.csv",
+# Letality in critical patients NY, Cummings et al
+agesVec <- c("20-29", "30-39", "40-49", "50-59", "60-69", "70-79",
+             "80-89", "90+")
+# absolute numbers are reported
+totalICU <- c(8, 19, 28, 52, 69, 52, 23, 6)
+diedICU <- c(0, 5, 6, 18, 22, 28, 17, 5)
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(totalICU))) {
+  letalityTest <- binom.test(diedICU[n], totalICU[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+criticalFatalityCummings <- data.frame(age=agesVec,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     ICU=totalICU,
+                                     Deaths=diedICU,
+                                     study="Cummings")
+
+# Letality in critical patients Georgia, Chishinga et al
+agesVec <- c("0-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
+# absolute numbers are reported
+totalICU <- c(4, 13, 14, 33, 44, 57, 74)
+diedICU <- c(2, 3, 2, 16, 33, 69, 170)
+invalidData <- which(totalICU<=diedICU)
+totalICU <- totalICU[-invalidData]
+diedICU <- diedICU[-invalidData]
+agesVec <- agesVec[-invalidData]
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(totalICU))) {
+  letalityTest <- binom.test(diedICU[n], totalICU[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+criticalFatalityChishinga <- data.frame(age=agesVec,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     ICU=totalICU,
+                                     Deaths=diedICU,
+                                     study="Chishinga")
+
+### Spain
+spainDailyOutcome <- read.csv("../downloaded_data/spain/casos_hosp_uci_def_sexo_edad_provres.csv",
+                                                  stringsAsFactors=FALSE) %>%
+  as_tibble(.) %>%
+    dplyr::mutate(., fecha=lubridate::date(fecha))
+
+spainDeaths <- dplyr::filter(spainDailyOutcome, fecha <= "2020-05-11" &
+                                  grupo_edad != "NC") %>%
+  group_by(., grupo_edad) %>%
+  summarize(., Deaths=sum(num_def)) %>%
+  dplyr::mutate(., proportion=Deaths, age=grupo_edad) %>%
+  dplyr::mutate(., Deaths=proportion)
+
+spainICU <- dplyr::filter(spainDailyOutcome, fecha <= "2020-05-11" &
+                                  grupo_edad != "NC") %>%
+  group_by(., grupo_edad) %>%
+  summarize(., ICU=sum(num_uci)) %>%
+  dplyr::mutate(., proportion=ICU, age=grupo_edad) %>%
+  dplyr::mutate(., ICU=proportion)
+
+agesVec <- spainDeaths$age
+# absolute numbers are reported
+totalICU <- spainICU$ICU
+diedICU <- spainDeaths$Deaths
+invalidData <- which(totalICU<=diedICU)
+totalICU <- totalICU[-invalidData]
+diedICU <- diedICU[-invalidData]
+agesVec <- agesVec[-invalidData]
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(totalICU))) {
+  letalityTest <- binom.test(diedICU[n], totalICU[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+criticalFatalitySpain <- data.frame(age=agesVec,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     ICU=totalICU,
+                                     Deaths=diedICU,
+                                     study="Spain")
+
+# Data from Ireland
+# https://www.hpsc.ie/a-z/respiratory/coronavirus/novelcoronavirus/casesinireland/epidemiologyofcovid-19inireland/july2020/
+agesVec <- c("0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64",
+             "65-74", "75-84", "85+")
+# absolute numbers are reported
+totalICU <- c(0, 2, 5, 15, 36, 91, 127, 109, 46, 6)
+diedICU <- c(0, 0, 1, 5, 12, 24, 67, 225, 514, 658)
+invalidData <- which(totalICU<=diedICU)
+totalICU <- totalICU[-invalidData]
+diedICU <- diedICU[-invalidData]
+agesVec <- agesVec[-invalidData]
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(totalICU))) {
+  letalityTest <- binom.test(diedICU[n], totalICU[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+criticalFatalityIreland <- data.frame(age=agesVec,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     ICU=totalICU,
+                                     Deaths=diedICU,
+                                     study="Ireland")
+
+# Data from New Zealand
+ageVecNZ <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
+                "60-69", "70-79", "80-89", "90+")
+# absolute numbers are reported
+nzICU <-    c(0, 1, 1, 1, 3, 4,  6,  10, 8, 5)
+nzDeaths <- c(0, 0, 0, 0, 0, 2,  3,  7,  8, 5)
+invalids <- which(nzICU == 0)
+if (length(invalids) > 0) {
+  nzICU <- nzICU[-invalids]
+  nzDeaths <- nzDeaths[-invalids]
+  ageVecNZ <- ageVecNZ[-invalids]
+}
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(nzICU))) {
+  letalityTest <- binom.test(nzDeaths[n], nzICU[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+criticalFatalityNZ <- data.frame(age=ageVecNZ,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     ICU=nzICU,
+                                     Deaths=nzDeaths,
+                                     study="New Zealand")
+
+# Put data together
+criticalLetalityData <- rbind(criticalFatalityICNARC,
+                              criticalFatalityCummings,
+                              criticalFatalityChishinga,
+                              criticalFatalitySpain,
+                              criticalFatalityIreland,
+                              criticalFatalityNZ)
+
+write.csv(criticalLetalityData, "../data/0_icu_letality_literature.csv",
           row.names=FALSE)
 
+
+###############################
 ###############################
 # Letality among hospitalised patients
+###############################
 ###############################
 
 # Globlal letality reported in different studies
@@ -136,6 +315,8 @@ severeFatalityRichardson <- data.frame(age = agesVec,
                                        letality = letalityVec,
                                        letalityL = letalityVecL,
                                        letalityH = letalityVecH,
+                                       Hosp = hospitalizedVec,
+                                       Deaths= deathsVec,
                                        study = "Richardson")
 
 # Karagiannidis
@@ -161,6 +342,8 @@ severeFatalityKaragiannidis <- data.frame(age = agesVec,
                                          letality = letalityVec,
                                          letalityL = letalityVecL,
                                          letalityH = letalityVecH,
+                                         Hosp = hospitalizedVec,
+                                         Deaths= deathsVec,
                                          study = "Karagiannidis")
 
 # Salje
@@ -168,35 +351,205 @@ agesVec <- c("0-20", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80+"
 letalityVec <- c(0.6, 1.1, 1.9, 3.3, 6.5, 12.6, 21.0, 31.6)
 letalityVecL <- c(0.2, 0.7, 1.5, 2.9, 6.0, 12.0, 20.3, 30.9)
 letalityVecH <- c(1.3, 1.6, 2.3, 3.8, 7.0, 13.2, 21.7, 32.4)
+# Estimate counts from the Salje intervals
+saljeVar <- ((letalityVecL-letalityVecH)/100/4)^2
+saljeNum <- (letalityVec/100)*(1-letalityVec/100)
+hospitalizedVec <- round(saljeNum/saljeVar)
+deathsVec <- round(hospitalizedVec*letalityVec/100)
 severeFatalitySalje <- data.frame(age = agesVec,
                                  letality = letalityVec,
                                  letalityL = letalityVecL,
                                  letalityH = letalityVecH,
+                                 Hosp = hospitalizedVec,
+                                 Deaths = deathsVec,
                                  study = "Salje")
 
-letalitySevereDf <- rbind(severeFatalityRichardson, severeFatalityKaragiannidis,
-                     severeFatalitySalje)
+# Netherlands data
+hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.csv",
+                       stringsAsFactors=FALSE, sep=";") %>%
+  as_tibble(.) %>%
+  dplyr::filter(., (Hospital_admission=="Yes" | Deceased=="Yes") &
+                (lubridate::date(Date_statistics)<="2020-07-01")) %>%
+  group_by(., Agegroup) %>%
+  summarize(., nHosp=sum((Hospital_admission=="Yes" | Deceased=="Yes")),
+            nDead=sum(Deceased=="Yes")) %>%
+  dplyr::mutate(., meanAge=mid_bin_age(Agegroup))
 
-# Palaiodimos (minority population, overrepresented in obesity)
-agesVec <- c("30-50", "51-64", "65-73", "74+")
-hospitalizedVec <- c(51, 53, 46, 50)
-deathsVec <- c(6, 12, 10, 20)
-letalityVec <- NULL
-letalityVecL <- NULL
-letalityVecH <- NULL
-for (l in c(1:length(deathsVec))) {
-  result <- binom.test(deathsVec[l], hospitalizedVec[l])
-  letalityVec[l] <- result$estimate * 100
-  letalityVecL[l] <- result$conf.int[1] * 100
-  letalityVecH[l] <- result$conf.int[2] * 100
+u50Deaths <- dplyr::filter(hospDataNL, Agegroup=="<50")[["nDead"]]
+deathsTot_U50 <- c(1, 2, 7, 22, 67)
+deathsNL_U50 <- round(deathsTot_U50/sum(deathsTot_U50)*u50Deaths)
+
+hospDataNL <- dplyr::filter(hospDataNL, !(Agegroup %in% c("<50", "Unknown")))
+hospDataNL$nDead[which(hospDataNL$meanAge<50)] <- deathsNL_U50
+
+hospDataNL <- dplyr::mutate(hospDataNL, hospDead=nDead/nHosp*100)
+
+deathsVec_NL <- hospDataNL$nDead
+hospitalizedVec_NL <- hospDataNL$nHosp
+letalityVec_NL <- NULL
+letalityVecL_NL <- NULL
+letalityVecH_NL <- NULL
+for (l in c(1:length(deathsVec_NL))) {
+  result <- binom.test(deathsVec_NL[l], hospitalizedVec_NL[l])
+  letalityVec_NL[l] <- result$estimate * 100
+  letalityVecL_NL[l] <- result$conf.int[1] * 100
+  letalityVecH_NL[l] <- result$conf.int[2] * 100
 }
-severeFatalityPalaiodimos <- data.frame(age = agesVec,
-                                 letality = letalityVec,
-                                 letalityL = letalityVecL,
-                                 letalityH = letalityVecH,
-                                 study = "Palaiodimos")
+severeNetherlands <- data.frame(age=hospDataNL$Agegroup,
+                                letality=letalityVec_NL,
+                                letalityL=letalityVecL_NL,
+                                letalityH=letalityVecH_NL,
+                                Hosp=hospitalizedVec_NL,
+                                Deaths=deathsVec_NL,
+                                study="Netherlands")
+
+# Spain data
+spainHosp <- dplyr::filter(spainDailyOutcome, fecha <= "2020-05-11" &
+                                  grupo_edad != "NC") %>%
+  group_by(., grupo_edad) %>%
+  summarize(., Hospitalized=sum(num_hosp)) %>%
+  dplyr::mutate(., proportion=Hospitalized, age=grupo_edad) %>%
+  dplyr::mutate(., Hospitalized=proportion)
+
+agesVec <- spainDeaths$age
+# absolute numbers are reported
+hospitalizedVec <- spainHosp$Hospitalized
+deathsVec <- spainDeaths$Deaths
+invalidData <- which(hospitalizedVec<=deathsVec)
+if (length(invalidData)>0) {
+  hospitalizedVec <- hospitalizedVec[-invalidData]
+  deathsVec <- deathsVec[-invalidData]
+  agesVec <- agesVec[-invalidData]
+}
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(hospitalizedVec))) {
+  letalityTest <- binom.test(deathsVec[n], hospitalizedVec[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+severeSpain <- data.frame(age=ageVec, letality=letality,
+                          letalityL=letalityL,
+                          letalityH=letalityH,
+                          Hosp=hospitalizedVec,
+                          Deaths=deathsVec,
+                          study="Spain")
+
+# Ireland data
+agesVec <- c("0-4", "5-14", "15-24", "25-34", "35-44", "45-54", "55-64",
+             "65-74", "75-84", "85+")
+# absolute numbers are reported
+hospitalizedVec <- c(24, 18, 77, 198, 274, 451, 499, 587, 746, 477)
+deathsVec <- c(0, 0, 1, 5, 12, 24, 67, 225, 514, 658)
+invalidData <- which(hospitalizedVec<=deathsVec)
+if (length(invalidData)>0) {
+  hospitalizedVec <- hospitalizedVec[-invalidData]
+  deathsVec <- deathsVec[-invalidData]
+  agesVec <- agesVec[-invalidData]
+}
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(hospitalizedVec))) {
+  letalityTest <- binom.test(deathsVec[n], hospitalizedVec[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+
+severeIreland <- data.frame(age=agesVec,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     Hosp=hospitalizedVec,
+                                     Deaths=deathsVec,
+                                     study="Ireland")
+
+# Data from New Zealand
+ageVecNZ <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
+                "60-69", "70-79", "80-89", "90+")
+# absolute numbers are reported
+nzHosp <-   c(1, 3, 7, 16, 16, 29, 27, 27, 16, 9)
+nzDeaths <- c(0, 0, 0, 0, 0, 2,  3,  7,  8, 5)
+invalids <- which(nzHosp == 0)
+if (length(invalids) > 0) {
+  nzHosp <- nzHosp[-invalids]
+  nzDeaths <- nzDeaths[-invalids]
+  ageVecNZ <- ageVecNZ[-invalids]
+}
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(nzHosp))) {
+  letalityTest <- binom.test(nzDeaths[n], nzHosp[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+severeNZ <- data.frame(age=ageVecNZ,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     Hosp=nzHosp,
+                                     Deaths=nzDeaths,
+                                     study="New Zealand")
+
+# Data from Georgia, USA
+ageVecGeorgia <- c("0-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
+georgiaHosp <- c(18, 62, 79, 115, 172, 180, 260)
+georgiaDeaths <- c(2, 3, 2, 16, 33, 69, 170)
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(georgiaHosp))) {
+  letalityTest <- binom.test(georgiaDeaths[n], georgiaHosp[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+severeGeorgia <- data.frame(age=ageVecGeorgia,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     Hosp=georgiaHosp,
+                                     Deaths=georgiaDeaths,
+                                     study="Atlanta, USA")
 
 
+# Data from NYC, USA
+ageVecNY <- c("0-17", "18-44", "45-64", "65-74", "75+")
+newyorkHosp <- c(273, 5695, 14156, 9240, 11212)
+newyorkDeaths <- c(5, 482, 2649, 2910, 5772)
+letality <- NULL
+letalityL <- NULL
+letalityH <- NULL
+# calculate binomial confidence intervals
+for (n in c(1:length(newyorkHosp))) {
+  letalityTest <- binom.test(newyorkDeaths[n], newyorkHosp[n])
+  letality[n] <- letalityTest$estimate*100
+  letalityL[n] <- letalityTest$conf.int[1]*100
+  letalityH[n] <- letalityTest$conf.int[2]*100
+}
+severeNY <- data.frame(age=ageVecNY,
+                                     letality=letality,
+                                     letalityL=letalityL,
+                                     letalityH=letalityH,
+                                     Hosp=newyorkHosp,
+                                     Deaths=newyorkDeaths,
+                                     study="New York City, USA")
+
+
+letalitySevereDf <- rbind(severeFatalityRichardson, severeFatalityKaragiannidis,
+                     severeFatalitySalje, severeNetherlands,
+                     severeSpain, severeIreland, severeNZ, severeGeorgia,
+                     severeNY)
 
 write.csv(letalitySevereDf, "../data/0_hospitalized_letality_literature.csv",
           row.names=FALSE)
