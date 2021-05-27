@@ -40,7 +40,7 @@ colorVector <- setNames(c("#983275", "#406E8E", "#ED5B46", "#8BD0B4", "#493319",
                           "black"), studies[1:(length(studies))])
 # plot IFR log
 litIFRPlot <- dplyr::filter(ifrLit, study != "Fitted") %>%
-  plot_literature_outcome(., title="", escalaLog=escalaLog,
+  plot_literature_outcome_line(., title="", escalaLog=escalaLog,
                                       colorVec=colorVector) +
   ylab("% infected dead") +
   geom_line(data = dplyr::filter(ifrLit, study=="Fitted"),
@@ -51,8 +51,7 @@ litIFRPlot <- dplyr::filter(ifrLit, study != "Fitted") %>%
 
 # plot critical log
 litCriticalPlot <- dplyr::filter(criticalLit, study != "Fitted") %>%
-  plot_literature_outcome(., title="",
-                                      escalaLog=escalaLog,
+  plot_literature_outcome_line(., title="", escalaLog=escalaLog,
                                       colorVec=colorVector) +
   ylab("% infected critical") +
   geom_line(data = dplyr::filter(criticalLit, study=="Fitted"),
@@ -63,7 +62,7 @@ litCriticalPlot <- dplyr::filter(criticalLit, study != "Fitted") %>%
 
 # plot severe log
 litSeverePlot <- dplyr::filter(severeLit, study != "Fitted") %>%
-  plot_literature_outcome(., title="", escalaLog=escalaLog,
+  plot_literature_outcome_line(., title="", escalaLog=escalaLog,
                           colorVec=colorVector) +
   ylab("% infected severe") +
   geom_line(data = dplyr::filter(severeLit, study=="Fitted"),
@@ -84,15 +83,17 @@ colorVector <- setNames(c("black", "magenta", "#456B9D", "#1D3557"),
                         unique(hospLetality$study))
 hospLetality <- dplyr::rename(hospLetality, outcome=letality,
                               outcomeL=letalityL, outcomeH=letalityH)
+
 hospLetalityPlot <- dplyr::filter(hospLetality, study!="Fitted") %>%
-  plot_literature_outcome(., title="", escalaLog=escalaLog,
-                          colorVec=colorVector) +
+  plot_literature_outcome_line(., title="", escalaLog=escalaLog,
+                          colorVec=NA) +
   ylab("% in hospital mortality") +
   geom_line(data = dplyr::filter(hospLetality, study=="Fitted"),
             aes(x=meanAge, y=outcome), color="black", size=1) +
   geom_ribbon(data = dplyr::filter(hospLetality, study=="Fitted"),
               aes(ymin = outcomeL, ymax = outcomeH), alpha = 0.2, colour=NA,
               fill="black", show.legend=FALSE)
+
 ggsave("../plots/0_letalidad_hospitalaria_literatura.png", hospLetalityPlot,
        width = 13, height = 10, units = "cm")
 
