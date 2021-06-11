@@ -529,8 +529,10 @@ NYC <- data.frame(Age=age_NYC_outcome,
 # Put countries together and export
 ####################################
 countriesDf <- dplyr::bind_rows(NewZealand, Korea, Spain, Ireland,
-  Sweden, Ile_de_France, England, Netherlands, Atlanta, NYC)
+  Sweden, Ile_de_France, England, Netherlands, Atlanta, NYC) %>%
+  dplyr::mutate(., meanAge=mid_bin_age(Age))
 
-write.csv(countriesDf, "../data/collected_data/locations_serology_data.csv", row.names=FALSE)
+write.csv(countriesDf, "../data/collected_data/locations_serology_data.csv",
+          row.names=FALSE)
 
 

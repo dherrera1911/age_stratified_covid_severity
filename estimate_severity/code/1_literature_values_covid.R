@@ -138,12 +138,11 @@ ihrSalje <- data.frame(Age=ageSalje, Proportion=severeSalje,
 
 
 literatureDf <- rbind(ifrDriscoll, ifrBrazeau, ifrLevin, ihrVerity,
-                      ihrSalje)
+                      ihrSalje) %>%
+  dplyr::mutate(., meanAge=mid_bin_age(Age))
 
-write.csv(literatureDf,
-          "../data/collected_data/literature_rates_estimations.csv",
+write.csv(literatureDf, "../data/collected_data/literature_rates_estimations.csv",
           row.names=FALSE)
-
 
 
 ###############################
@@ -173,23 +172,9 @@ age_ICNARC <- c("16-39", "40-49", "50-59", "60-69", "70-79", "80+")
 discharged_ICNARC <- c(734, 1131, 1982, 1689, 786, 137)
 deaths_ICNARC <- c(131, 311, 991, 1467, 1145, 191)
 ICU_ICNARC <- discharged_ICNARC + deaths_ICNARC
-letality_ICNARC <- NULL
-letalityL_ICNARC <- NULL
-letalityH_ICNARC <- NULL
-# calculate binomial confidence intervals
-for (n in c(1:length(ICU_ICNARC))) {
-  letalityTest <- binom.test(deaths_ICNARC[n], ICU_ICNARC[n])
-  letality_ICNARC[n] <- letalityTest$estimate*100
-  letalityL_ICNARC[n] <- letalityTest$conf.int[1]*100
-  letalityH_ICNARC[n] <- letalityTest$conf.int[2]*100
-}
-
 criticalFatalityICNARC <- data.frame(Age=age_ICNARC,
                                      Patients=ICU_ICNARC,
                                      Deaths=deaths_ICNARC,
-                                     Letality=letality_ICNARC,
-                                     LetalityL=letalityL_ICNARC,
-                                     LetalityH=letalityH_ICNARC,
                                      Study="ICNARC",
                                      Type="ICU",
                                      Location="UK",
@@ -204,23 +189,9 @@ age_NYC <- c("20-29", "30-39", "40-49", "50-59", "60-69", "70-79",
 # absolute numbers are reported
 ICU_NYC <- c(8, 19, 28, 52, 69, 52, 23, 6)
 deaths_NYC <- c(0, 5, 6, 18, 22, 28, 17, 5)
-letality_NYC <- NULL
-letalityL_NYC <- NULL
-letalityH_NYC <- NULL
-# calculate binomial confidence intervals
-for (n in c(1:length(ICU_NYC))) {
-  letalityTest <- binom.test(deaths_NYC[n], ICU_NYC[n])
-  letality_NYC[n] <- letalityTest$estimate*100
-  letalityL_NYC[n] <- letalityTest$conf.int[1]*100
-  letalityH_NYC[n] <- letalityTest$conf.int[2]*100
-}
-
 criticalFatalityCummings <- data.frame(Age=age_NYC,
                                      Patients=ICU_NYC,
                                      Deaths=deaths_NYC,
-                                     Letality=letality_NYC,
-                                     LetalityL=letalityL_NYC,
-                                     LetalityH=letalityH_NYC,
                                      Study="Cummings",
                                      Type="ICU",
                                      Location="NYC, USA",
@@ -258,22 +229,9 @@ deaths_Richardson <- deathsFemale + deathsMale
 hospitalized_Richardson <- hospitalizedFemale + hospitalizedMale
 notDischarged <- c(7, 9, 52, 142, 319, 594, 771, 697, 369, 106)
 
-letality_Richardson <- NULL
-letalityL_Richardson <- NULL
-letalityH_Richardson <- NULL
-for (l in c(1:length(deaths_Richardson))) {
-  letalityTest <- binom.test(deaths_Richardson[l], hospitalized_Richardson[l])
-  letality_Richardson[l] <- letalityTest$estimate * 100
-  letalityL_Richardson[l] <- letalityTest$conf.int[1] * 100
-  letalityH_Richardson[l] <- letalityTest$conf.int[2] * 100
-}
-
 severeFatalityRichardson <- data.frame(Age=ages_Richardson,
                                        Patients=hospitalized_Richardson,
                                        Deaths= deaths_Richardson,
-                                       Letality=letality_Richardson,
-                                       LetalityL=letalityL_Richardson,
-                                       LetalityH=letalityH_Richardson,
                                        Study="Richardson",
                                        Type="Hospital",
                                        Location="NYC, USA",
@@ -290,22 +248,10 @@ mortalityVentilator <- c(27.7, 45.5, 62.6, 72.2)
 hospitalized_Karagiannidis <- patientsVentilator + patientsNoVentilator
 deaths_Karagiannidis <- round((patientsVentilator*mortalityVentilator +
                     patientsNoVentilator*mortalityNoVentilator)/100)
-letalityVec <- NULL
-letalityVecL <- NULL
-letalityVecH <- NULL
-for (l in c(1:length(deaths_Karagiannidis))) {
-  result <- binom.test(deaths_Karagiannidis[l], hospitalized_Karagiannidis[l])
-  letalityVec[l] <- result$estimate * 100
-  letalityVecL[l] <- result$conf.int[1] * 100
-  letalityVecH[l] <- result$conf.int[2] * 100
-}
 
 severeFatalityKaragiannidis <- data.frame(Age=age_Karagiannidis,
                                           Patients=hospitalized_Karagiannidis,
                                           Deaths= deaths_Karagiannidis,
-                                          Letality=letalityVec,
-                                          LetalityL=letalityVecL,
-                                          LetalityH=letalityVecH,
                                           Study="Karagiannidis",
                                           Type="Hospital",
                                           Location="Germany",
@@ -326,9 +272,6 @@ deaths_Salje <- round(hospitalized_Salje*letality_Salje/100)
 severeFatalitySalje <- data.frame(Age=age_Salje,
                                   Patients=hospitalized_Salje,
                                   Deaths=deaths_Salje,
-                                  Letality=letality_Salje,
-                                  LetalityL=letalityL_Salje,
-                                  LetalityH=letalityH_Salje,
                                   Study="Salje",
                                   Type="Hospital",
                                   Location="France",
@@ -360,38 +303,23 @@ age_Netherlands <- hospDataNL$Agegroup
 deaths_Netherlands <- hospDataNL$nDead
 Hospitalized_Netherlands <- hospDataNL$nHosp
 
-letality_Netherlands <- NULL
-letalityL_Netherlands <- NULL
-letalityH_Netherlands <- NULL
-# calculate binomial confidence intervals
-for (n in c(1:length(Hospitalized_Netherlands))) {
-  letalityTest <- binom.test(deaths_Netherlands[n], Hospitalized_Netherlands[n])
-  letality_Netherlands[n] <- letalityTest$estimate*100
-  letalityL_Netherlands[n] <- letalityTest$conf.int[1]*100
-  letalityH_Netherlands[n] <- letalityTest$conf.int[2]*100
-}
-
 severeFatalityNetherlands <- data.frame(Age=age_Netherlands,
                                   Patients=Hospitalized_Netherlands,
                                   Deaths=deaths_Netherlands,
-                                  Letality=letality_Netherlands,
-                                  LetalityL=letalityL_Netherlands,
-                                  LetalityH=letalityH_Netherlands,
                                   Study="Public_data",
                                   Type="Hospital",
                                   Location="Netherlands",
                                   EndPoint="2020-07-01")
-
 
 #####################
 # Put together studies on hospitalized populations
 #####################
 controledStudies <- rbind(criticalFatalityICNARC, criticalFatalityCummings,
                           severeFatalityRichardson, severeFatalityKaragiannidis,
-                          severeFatalitySalje, severeFatalityNetherlands)
+                          severeFatalitySalje, severeFatalityNetherlands) %>%
+  dplyr::mutate(., meanAge=mid_bin_age(Age))
 
-write.csv(controledStudies,
-          "../data/collected_data/hospitalized_patient_studies.csv",
+write.csv(controledStudies, "../data/collected_data/hospitalized_patient_studies.csv",
           row.names=FALSE)
 
 
