@@ -185,11 +185,11 @@ for (n in c(1:length(ICU_ICNARC))) {
 }
 
 criticalFatalityICNARC <- data.frame(Age=age_ICNARC,
+                                     Patients=ICU_ICNARC,
+                                     Deaths=deaths_ICNARC,
                                      Letality=letality_ICNARC,
                                      LetalityL=letalityL_ICNARC,
                                      LetalityH=letalityH_ICNARC,
-                                     Patients=ICU_ICNARC,
-                                     Deaths=deaths_ICNARC,
                                      Study="ICNARC",
                                      Type="ICU",
                                      Location="UK",
@@ -216,11 +216,11 @@ for (n in c(1:length(ICU_NYC))) {
 }
 
 criticalFatalityCummings <- data.frame(Age=age_NYC,
+                                     Patients=ICU_NYC,
+                                     Deaths=deaths_NYC,
                                      Letality=letality_NYC,
                                      LetalityL=letalityL_NYC,
                                      LetalityH=letalityH_NYC,
-                                     Patients=ICU_NYC,
-                                     Deaths=deaths_NYC,
                                      Study="Cummings",
                                      Type="ICU",
                                      Location="NYC, USA",
@@ -269,11 +269,11 @@ for (l in c(1:length(deaths_Richardson))) {
 }
 
 severeFatalityRichardson <- data.frame(Age=ages_Richardson,
+                                       Patients=hospitalized_Richardson,
+                                       Deaths= deaths_Richardson,
                                        Letality=letality_Richardson,
                                        LetalityL=letalityL_Richardson,
                                        LetalityH=letalityH_Richardson,
-                                       Patients=hospitalized_Richardson,
-                                       Deaths= deaths_Richardson,
                                        Study="Richardson",
                                        Type="Hospital",
                                        Location="NYC, USA",
@@ -301,11 +301,11 @@ for (l in c(1:length(deaths_Karagiannidis))) {
 }
 
 severeFatalityKaragiannidis <- data.frame(Age=age_Karagiannidis,
+                                          Patients=hospitalized_Karagiannidis,
+                                          Deaths= deaths_Karagiannidis,
                                           Letality=letalityVec,
                                           LetalityL=letalityVecL,
                                           LetalityH=letalityVecH,
-                                          Patients=hospitalized_Karagiannidis,
-                                          Deaths= deaths_Karagiannidis,
                                           Study="Karagiannidis",
                                           Type="Hospital",
                                           Location="Germany",
@@ -324,11 +324,11 @@ saljeNum <- (letality_Salje/100)*(1-letality_Salje/100)
 hospitalized_Salje <- round(saljeNum/saljeVar)
 deaths_Salje <- round(hospitalized_Salje*letality_Salje/100)
 severeFatalitySalje <- data.frame(Age=age_Salje,
+                                  Patients=hospitalized_Salje,
+                                  Deaths=deaths_Salje,
                                   Letality=letality_Salje,
                                   LetalityL=letalityL_Salje,
                                   LetalityH=letalityH_Salje,
-                                  Patients=hospitalized_Salje,
-                                  Deaths=deaths_Salje,
                                   Study="Salje",
                                   Type="Hospital",
                                   Location="France",
@@ -337,7 +337,6 @@ severeFatalitySalje <- data.frame(Age=age_Salje,
 ################
 # Netherlands Data
 ################
-
 hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.csv",
                        stringsAsFactors=FALSE, sep=";") %>%
   as_tibble(.) %>%
@@ -357,7 +356,7 @@ deathsNL_U50 <- round(deathsTot_U50/sum(deathsTot_U50)*u50Deaths)
 hospDataNL <- dplyr::filter(hospDataNL, !(Agegroup %in% c("<50", "Unknown")))
 hospDataNL$nDead[which(hospDataNL$meanAge<50)] <- deathsNL_U50
 
-age_Netherlands_outcome <- hospDataNL$Agegroup
+age_Netherlands <- hospDataNL$Agegroup
 deaths_Netherlands <- hospDataNL$nDead
 Hospitalized_Netherlands <- hospDataNL$nHosp
 
@@ -373,11 +372,11 @@ for (n in c(1:length(Hospitalized_Netherlands))) {
 }
 
 severeFatalityNetherlands <- data.frame(Age=age_Netherlands,
+                                  Patients=Hospitalized_Netherlands,
+                                  Deaths=deaths_Netherlands,
                                   Letality=letality_Netherlands,
                                   LetalityL=letalityL_Netherlands,
                                   LetalityH=letalityH_Netherlands,
-                                  Patients=Hospitalized_Netherlands,
-                                  Deaths=deaths_Netherlands,
                                   Study="Public_data",
                                   Type="Hospital",
                                   Location="Netherlands",

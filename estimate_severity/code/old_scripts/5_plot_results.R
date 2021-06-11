@@ -278,4 +278,3 @@ fluHosp18_49 <- 80985
 fluHosp50_64 <- 140385
 fluProp18_49 <- fluHosp18_49/fluSympt18_49*100
 fluProp50_64 <- fluHosp50_64/fluSympt50_64*100
-

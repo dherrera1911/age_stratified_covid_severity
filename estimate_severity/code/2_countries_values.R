@@ -40,7 +40,7 @@ NewZealand <- data.frame(Age=age_NZ,
                          Deaths=deaths_NZ,
                          Type="Testing",
                          Location="New_Zealand",
-                         EndPointOutcomes="2021-01-13",
+                         EndPointOutcome="2021-01-13",
                          EndPointCases="2021-01-13")
 
 ################
@@ -531,6 +531,6 @@ NYC <- data.frame(Age=age_NYC_outcome,
 countriesDf <- dplyr::bind_rows(NewZealand, Korea, Spain, Ireland,
   Sweden, Ile_de_France, England, Netherlands, Atlanta, NYC)
 
-write.csv(countriesDf, "../data/collected_data/locations_data.csv", row.names=FALSE)
+write.csv(countriesDf, "../data/collected_data/locations_serology_data.csv", row.names=FALSE)
 
 
