@@ -373,7 +373,7 @@ hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.
                        stringsAsFactors=FALSE, sep=";") %>%
   as_tibble(.) %>%
   dplyr::filter(., (Hospital_admission=="Yes" | Deceased=="Yes") &
-                (lubridate::date(Date_statistics)<="2020-07-01")) %>%
+                (lubridate::date(Date_statistics)<="2020-09-01")) %>%
   group_by(., Agegroup) %>%
   summarize(., nHosp=sum((Hospital_admission=="Yes")),
             nDead=sum(Deceased=="Yes"),
