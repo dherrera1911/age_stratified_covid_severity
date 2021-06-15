@@ -183,7 +183,6 @@ criticalFatalityICNARC <- data.frame(Age=age_ICNARC,
 ###############
 # Critical patients NY, Cummings et al
 ###############
-
 age_NYC <- c("20-29", "30-39", "40-49", "50-59", "60-69", "70-79",
              "80-89", "90+")
 # absolute numbers are reported
@@ -196,6 +195,73 @@ criticalFatalityCummings <- data.frame(Age=age_NYC,
                                      Type="ICU",
                                      Location="NYC, USA",
                                      EndPoint="2020-04-28")
+
+##############
+# Critical care, France, Belgium, Switzerland, REVA
+##############
+# Clinical characteristics and day-90 outcomes of 4244 critically ill
+# adults with COVID-19: a prospective cohort study
+age_REVA <- c("16-39", "40-59", "60-74", "75+")
+# absolute numbers are reported
+ICU_REVA <- c(220, 1480, 1972, 572)
+deaths_REVA <- c(29, 302, 611, 306)
+criticalFatalityREVA <- data.frame(Age=age_REVA,
+                                     Patients=ICU_REVA,
+                                     Deaths=deaths_REVA,
+                                     Study="REVA Network",
+                                     Type="ICU",
+                                     Location="France, Belgium, Switzerland",
+                                     EndPoint="2020-05-04")
+
+##############
+# Ranzani, Brazil
+##############
+# Characterisation of the first 250 000 hospital admissions for
+# COVID-19 in Brazil: a retrospective analysis of nationwide data
+age_Ranzani <- c("20-39", "40-49", "50-59", "60-69", "70-79", "80+")
+# absolute numbers are reported
+ICU_Ranzani <- c(7512, 9478, 14034, 18058, 16848, 13757)
+deaths_ICU_Ranzani <- c(2225, 3503, 6732, 11372, 12257, 10913)
+criticalFatalityRanzani <- data.frame(Age=age_Ranzani,
+                                     Patients=ICU_Ranzani,
+                                     Deaths=deaths_ICU_Ranzani,
+                                     Study="Ranzani",
+                                     Type="ICU",
+                                     Location="Brazil",
+                                     EndPoint="2020-08-15")
+
+##############
+# Pediatric Critical care, González-Dambrauskas et al
+##############
+# Since the age of individual patients is given, we disagregated
+# them by age
+age_Gonzalez <- c("0-10", "11-18")
+# absolute numbers are reported
+ICU_Gonzalez <- c(12, 5)
+deaths_Gonzalez <- c(1, 0)
+criticalFatalityGonzalez <- data.frame(Age=age_Gonzalez,
+                                     Patients=ICU_Gonzalez,
+                                     Deaths=deaths_Gonzalez,
+                                     Study="Gonzalez-Dambrauskas",
+                                     Type="ICU",
+                                     Location="Intercontinental",
+                                     EndPoint="2020-04-23")
+
+
+##############
+# Pediatric Critical care, Brazil, Prata-Barbosa et al
+##############
+age_Prata <- c("0-1", "1-3", "3-5", "5-12", "12-18")
+# absolute numbers are reported
+ICU_Prata <- c(19, 18, 7, 19, 14)
+deaths_Prata <- c(0, 1, 0, 0, 1)
+criticalFatalityPrata <- data.frame(Age=age_Prata,
+                                     Patients=ICU_Prata,
+                                     Deaths=deaths_Prata,
+                                     Study="Prata-Barbosa",
+                                     Type="ICU",
+                                     Location="Brazil_2",
+                                     EndPoint="2020-05-31")
 
 ############
 ############
@@ -277,6 +343,24 @@ severeFatalitySalje <- data.frame(Age=age_Salje,
                                   Location="France",
                                   EndPoint="2020-05-13")
 
+##############
+# Ranzani, Brazil
+##############
+# Characterisation of the first 250 000 hospital admissions for
+# COVID-19 in Brazil: a retrospective analysis of nationwide data
+age_Ranzani <- c("20-39", "40-49", "50-59", "60-69", "70-79", "80+")
+# absolute numbers are reported
+hospitalized_Ranzani <- c(30603, 33968, 43376, 48270, 41434, 34385)
+deaths_Ranzani <- c(3780, 6162, 11818, 20317, 22651, 22787)
+severeFatalityRanzani <- data.frame(Age=age_Ranzani,
+                                     Patients=hospitalized_Ranzani,
+                                     Deaths=deaths_Ranzani,
+                                     Study="Ranzani",
+                                     Type="Hospital",
+                                     Location="Brazil",
+                                     EndPoint="2020-08-15")
+
+
 ################
 # Netherlands Data
 ################
@@ -315,8 +399,11 @@ severeFatalityNetherlands <- data.frame(Age=age_Netherlands,
 # Put together studies on hospitalized populations
 #####################
 controledStudies <- rbind(criticalFatalityICNARC, criticalFatalityCummings,
+                          criticalFatalityREVA, criticalFatalityRanzani,
+                          criticalFatalityGonzalez, criticalFatalityPrata,
                           severeFatalityRichardson, severeFatalityKaragiannidis,
-                          severeFatalitySalje, severeFatalityNetherlands) %>%
+                          severeFatalitySalje, severeFatalityNetherlands,
+                          severeFatalityRanzani) %>%
   dplyr::mutate(., meanAge=mid_bin_age(Age))
 
 write.csv(controledStudies, "../data/collected_data/hospitalized_patient_studies.csv",

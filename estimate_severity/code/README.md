@@ -26,8 +26,17 @@ Fit a bayesian regression model to the proportion of outcomes
 (severe disease, critical disease, deaths), taken over
 the number of estimated infections from seroprevalence data
 (or from testing in some cases). The model is defined
-in the file **3_estimate_serology_outcome_rates.stan**.
+in the file *3_estimate_serology_outcome_rates.stan*,
+and uses the data from *locations_serology_data.csv*
 
+
+### 4_estimate_hospital_lethality.R
+
+Fits a bayesian regression model to the proportion of
+deaths among hospitalized patients (in general hospital
+or in ICU). Uses the model defined in
+*3_estimate_serology_outcome_rates.stan*, and the data
+from *hospitalized_patient_studies.csv*.
 
 
 

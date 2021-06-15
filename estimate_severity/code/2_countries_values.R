@@ -368,6 +368,7 @@ England <- data.frame(Age=age_England_ICU,
 # More death data: https://www.rivm.nl/coronavirus-covid-19/grafieken
 # Seroprevalence estimatesfirst week april: Nationwide seroprevalence of SARS-CoV-2 andidentification of risk factors in the general populationof the Netherlands during thefirst epidemic wave
 # Seroprevalence 2 https://www.rivm.nl/en/pienter-corona-study/results
+# Seroprevalence 2 Associations between measures of social distancing and SARS-CoV-2 seropositivity: a nationwide population-based study in the Netherlands
 
 hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.csv",
                        stringsAsFactors=FALSE, sep=";") %>%
@@ -436,10 +437,16 @@ Netherlands <- data.frame(Age=age_Netherlands_outcome,
 # Paper data are until 31 May. 
 # Georgia pop from Levin et al
 # Seroprev: Estimated Community Seroprevalence of SARS-CoV-2 Antibodies — Two Georgia Counties
+# webpage with old Georgia files: https://github.com/CEIDatUGA/COVID-19-DATA/tree/master/georgia/ga_GDPH_daily_status_report/from-dashboard/raw-data
+# Note: Seroprevalence estimate is from Fulton + Kalb counties, but since
+# outcomes are only Fulton, we use the populaiton of Fulton alone to
+# estimate number of infections
 age_Atlanta_outcome <- c("0-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+")
 Hospitalized_Atlanta <- c(18, 62, 79, 115, 172, 180, 260)
 ICU_Atlanta <- c(4, 13, 14, 33, 44, 57, 74)
 deaths_Atlanta <- c(2, 3, 2, 16, 33, 69, 170)
+
+# Official hospital count at 31 may coincides with count from paper
 nHosp31May <- 888
 
 Hospitalized_Atlanta <- c(sum(Hospitalized_Atlanta[2:3]), sum(Hospitalized_Atlanta[4:5]))
@@ -452,7 +459,25 @@ seroprev_Atlanta <- c(3.3, 4.9)
 seroprevL_Atlanta <- c(1.6, 6.4)
 seroprevH_Atlanta <- c(1.8, 12.9)
 
-atlantaPop <- c(867468, 327713)
+# Pupulation of Fulton county, excluding Kalb
+# https://censusreporter.org/profiles/05000US13121-fulton-county-ga/
+popAges <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
+             "60-69", "70-79", "80+")
+fultonPop <- c(121264, 139338, 170663, 167043, 147087, 136780,
+                   100174, 52860, 28728)
+fultonPop <- c(sum(fultonPop[3:5]))
+
+age_Atlanta_pops <- c("18-19", "20", "21", "22-24", "25-29",
+                      "30-34", "35-39", "40-44", "45-49", "50-54",
+                      "55-59", "60-61", "62-64")
+atlantaPop_male <- c(16322, 6281, 8021, 23634, 47169, 43101, 36338, 35776,
+                     36811, 34609, 32387, 8823, 16595)
+atlantaPop_female <- c(16486, 6397, 7734, 22227, 49200, 44301, 43303,
+                       35197, 39303, 34882, 34902, 10626, 17962)
+atlantaPop <- atlantaPop_male + atlantaPop_female
+atlantaPop <- c(sum(atlantaPop[1:9]), sum(atlantaPop[10:13]))
+
+#atlantaPop <- c(867468, 327713)
 
 cases_Atlanta <- round(atlantaPop*seroprev_Atlanta/100)
 casesL_Atlanta <- round(atlantaPop*seroprevL_Atlanta/100)
