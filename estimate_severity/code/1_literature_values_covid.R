@@ -343,6 +343,60 @@ severeFatalitySalje <- data.frame(Age=age_Salje,
                                   Location="France",
                                   EndPoint="2020-05-13")
 
+
+###############
+# Docherty, UK
+###############
+age_Docherty <- c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29",
+                  "30-34", "35-39", "40-44", "45-49", "50-54", "55-59",
+                  "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90+")
+discharged_Docherty <- c(83, 21, 12, 24, 40, 53, 99, 159, 222, 309, 415, 459,
+                477, 453, 496, 477, 466, 309, 137)
+ongoingCare <- c(29, 5, 10, 5, 13, 27, 39, 71, 106, 195, 287, 380, 363,
+                 395, 479, 506, 497, 414, 267)
+deaths_Docherty <- c(1, 0, 0, 1, 1, 5, 5, 11, 19, 37, 63, 124, 184, 243, 451,
+          563, 653, 552, 356)
+resolved_Docherty <- deaths_Docherty + discharged_Docherty
+severeFatalityDocherty <- data.frame(Age=age_Docherty,
+                                  Patients=resolved_Docherty,
+                                  Deaths=deaths_Docherty,
+                                  Study="Docherty",
+                                  Type="Hospital",
+                                  Location="UK",
+                                  EndPoint="2020-04-19")
+
+###############
+# Berenguer, Spain
+###############
+age_Berenguer <- c("0-10", "11-20", "21-30", "31-40", "41-50", "51-60",
+                  "61-70", "71-80", "81-90", "91+")
+alive_Berenguer <- c(13, 18, 89, 210, 373, 483, 624, 675, 355, 61)
+deaths_Berenguer <- c(2, 0, 2, 5, 18, 68, 167, 357, 389, 122)
+patients_Berenguer <- alive_Berenguer + deaths_Berenguer
+severeFatalityBerenguer <- data.frame(Age=age_Berenguer,
+                                  Patients=patients_Berenguer,
+                                  Deaths=deaths_Berenguer,
+                                  Study="Berenguer",
+                                  Type="Hospital",
+                                  Location="Spain",
+                                  EndPoint="2020-03-17")
+
+###############
+# Maquilon, Chile
+###############
+age_Maquilon <- c("1-18", "19-39", "40-49", "50-59", "60-69", "70+")
+alive_Maquilon <- c(14, 141, 97, 87, 81, 28)
+deaths_Maquilon <- c(0, 3, 2, 4, 8, 37)
+patients_Maquilon <- alive_Maquilon + deaths_Maquilon
+severeFatalityMaquilon <- data.frame(Age=age_Maquilon,
+                                  Patients=patients_Maquilon,
+                                  Deaths=deaths_Maquilon,
+                                  Study="Maquilon",
+                                  Type="Hospital",
+                                  Location="Chile",
+                                  EndPoint="2020-06-04")
+
+
 ##############
 # Ranzani, Brazil
 ##############
@@ -403,7 +457,8 @@ controledStudies <- rbind(criticalFatalityICNARC, criticalFatalityCummings,
                           criticalFatalityGonzalez, criticalFatalityPrata,
                           severeFatalityRichardson, severeFatalityKaragiannidis,
                           severeFatalitySalje, severeFatalityNetherlands,
-                          severeFatalityRanzani) %>%
+                          severeFatalityRanzani, severeFatalityDocherty,
+                          severeFatalityBerenguer) %>%
   dplyr::mutate(., meanAge=mid_bin_age(Age))
 
 write.csv(controledStudies, "../data/collected_data/hospitalized_patient_studies.csv",
