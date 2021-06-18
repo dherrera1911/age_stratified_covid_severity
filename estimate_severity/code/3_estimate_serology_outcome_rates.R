@@ -7,14 +7,13 @@ library(bayesplot)
 library(tidybayes)
 source("./functions_auxiliary.R")
 source("./stan_utility.R")
+set.seed(2961)
 
 countryData <- read.csv("../data/collected_data/locations_serology_data.csv",
                         stringsAsFactors=FALSE) %>%
   as_tibble(.)
 
 outcome_reg <- rstan::stan_model("./3_estimate_serology_outcome_rates.stan")
-save('outcome_reg', file = '3_serology_model.RData')
-#outcome_reg <- load("./3_serology_model.RData")
 
 outcome <- c("Hospitalized", "ICU", "Deaths")
 
@@ -24,7 +23,7 @@ sdAge <- list()
 priorReg <- list()
 outcomeDataList <- list()
 model <- list()
-
+locationKey <- list()
 for (no in c(1:length(outcome))) {
   oStr <- outcome[no]
   # Select countries with outcome data
@@ -53,9 +52,12 @@ for (no in c(1:length(outcome))) {
   # Fit model
   model[[oStr]] <- rstan::sampling(outcome_reg, data=outcomeDataList[[oStr]],
                              chains=4, iter=5000, refresh=0)
-
+  locationKey[[oStr]] <- unique(dplyr::select(outcomeData[[oStr]],
+                                              Location, locationNum))
 }
 
-modelList <- list(model=model, meanAge=meanAge, sdAge=sdAge)
+modelList <- list(model=model, locationKey=locationKey,
+                  meanAge=meanAge, sdAge=sdAge)
+
 saveRDS(modelList, "../data/processed_data/3_serology_fits.RDS")
 

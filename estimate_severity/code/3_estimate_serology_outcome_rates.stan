@@ -5,15 +5,15 @@ data {
   vector[N] ageVec;                     // predictor
   int cases[N];                         // Case count
   int outcomes[N];                      // outcome count
-  real slopePrior;                      // slope prior
-  real interceptPrior;                  // intercept prior
+//  real slopePrior;                      // slope prior
+//  real interceptPrior;                  // intercept prior
 }
 
 parameters {
   // Countries outcome fit
-  real<lower=0> ageSlope;             // mean slope
+  real ageSlope;             // mean slope
   real<lower=0> ageSlopeSigma;        // sd of slope across locations
-  vector<lower=0>[K] locationSlope;   // vector with slope of each location
+  vector[K] locationSlope;   // vector with slope of each location
   real intercept;                     // mean intercept
   real<lower=0> interceptSigma;       // sd of the intercept
   vector[K] locationIntercept;        // intercept of each location 
@@ -25,11 +25,11 @@ transformed parameters{
 }
 
 model {
-  ageSlope ~ normal(slopePrior, 0.5); // normal(0, 0.1);
-  ageSlopeSigma ~ exponential(1);
+  ageSlope ~ normal(1, 2); // normal(0, 0.1);
+  ageSlopeSigma ~ exponential(0.5);
   locationSlope ~ normal(ageSlope, ageSlopeSigma);
-  intercept ~ normal(interceptPrior, 1);
-  interceptSigma ~ exponential(1);
+  intercept ~ normal(-5, 2);
+  interceptSigma ~ exponential(0.5);
   locationIntercept ~ normal(intercept, interceptSigma);
   outcomes ~ binomial(cases, outcomeRate);
 }

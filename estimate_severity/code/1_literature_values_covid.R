@@ -299,7 +299,7 @@ severeFatalityRichardson <- data.frame(Age=ages_Richardson,
                                        Patients=hospitalized_Richardson,
                                        Deaths= deaths_Richardson,
                                        Study="Richardson",
-                                       Type="Hospital",
+                                       Type="Hospitalized",
                                        Location="NYC, USA",
                                        EndPoint="2020-04-04")
 
@@ -319,7 +319,7 @@ severeFatalityKaragiannidis <- data.frame(Age=age_Karagiannidis,
                                           Patients=hospitalized_Karagiannidis,
                                           Deaths= deaths_Karagiannidis,
                                           Study="Karagiannidis",
-                                          Type="Hospital",
+                                          Type="Hospitalized",
                                           Location="Germany",
                                           EndPoint="2020-04-19")
 
@@ -339,7 +339,7 @@ severeFatalitySalje <- data.frame(Age=age_Salje,
                                   Patients=hospitalized_Salje,
                                   Deaths=deaths_Salje,
                                   Study="Salje",
-                                  Type="Hospital",
+                                  Type="Hospitalized",
                                   Location="France",
                                   EndPoint="2020-05-13")
 
@@ -361,7 +361,7 @@ severeFatalityDocherty <- data.frame(Age=age_Docherty,
                                   Patients=resolved_Docherty,
                                   Deaths=deaths_Docherty,
                                   Study="Docherty",
-                                  Type="Hospital",
+                                  Type="Hospitalized",
                                   Location="UK",
                                   EndPoint="2020-04-19")
 
@@ -377,7 +377,7 @@ severeFatalityBerenguer <- data.frame(Age=age_Berenguer,
                                   Patients=patients_Berenguer,
                                   Deaths=deaths_Berenguer,
                                   Study="Berenguer",
-                                  Type="Hospital",
+                                  Type="Hospitalized",
                                   Location="Spain",
                                   EndPoint="2020-03-17")
 
@@ -392,7 +392,7 @@ severeFatalityMaquilon <- data.frame(Age=age_Maquilon,
                                   Patients=patients_Maquilon,
                                   Deaths=deaths_Maquilon,
                                   Study="Maquilon",
-                                  Type="Hospital",
+                                  Type="Hospitalized",
                                   Location="Chile",
                                   EndPoint="2020-06-04")
 
@@ -410,7 +410,7 @@ severeFatalityRanzani <- data.frame(Age=age_Ranzani,
                                      Patients=hospitalized_Ranzani,
                                      Deaths=deaths_Ranzani,
                                      Study="Ranzani",
-                                     Type="Hospital",
+                                     Type="Hospitalized",
                                      Location="Brazil",
                                      EndPoint="2020-08-15")
 
@@ -445,7 +445,7 @@ severeFatalityNetherlands <- data.frame(Age=age_Netherlands,
                                   Patients=Hospitalized_Netherlands,
                                   Deaths=deaths_Netherlands,
                                   Study="Public_data",
-                                  Type="Hospital",
+                                  Type="Hospitalized",
                                   Location="Netherlands",
                                   EndPoint="2020-07-01")
 
