@@ -27,9 +27,12 @@ outputDf <- literatureIFR
 for (no in c(1:length(outcomes))) {
   oStr <- outcomes[no]
   outcomeFit <- lethalityFit$model[[oStr]]
-  stdAgeVec <- (ageVec-lethalityFit$meanAge[[oStr]])/lethalityFit$sdAge[[oStr]]
-  lethalityPosterior[[oStr]] <- proportion_samples(model=lethalityFit$model[[oStr]],
-                             ageVec=stdAgeVec)
+  meanAge <- lethalityFit$meanAge[[oStr]]
+  sdAge <- lethalityFit$sdAge[[oStr]]
+  lethalityPosterior[[oStr]] <- proportion_samples(model=outcomeFit,
+                                                   ageVec=ageVec,
+                                                   meanAge=meanAge,
+                                                   sdAge=sdAge)
   ifrVec <- rep(literatureIFR$Proportion, max(lethalityPosterior[[oStr]]$sample))
   outcomeProp <- ifrVec/lethalityPosterior[[oStr]]$samples$proportion
   # Find mean and quantiles of samples

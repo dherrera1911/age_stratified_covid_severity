@@ -28,8 +28,8 @@ age_NZ <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
 # absolute numbers are reported
 Tested_NZ <- c(92, 196, 517, 395, 308, 319, 222, 91, 32, 9)
 Hospitalized_NZ <- c(1, 3, 7, 16, 16, 29, 27, 27, 16, 9)
-ICU_NZ <-    c(0, 1, 1, 1, 3, 4, 6,  10, 8, 5)
-deaths_NZ <- c(0, 0, 0, 0, 0, 2, 3,  7,  8, 5)
+ICU_NZ <-    c(0, 1, 1, 1, 3, 4, 6, 10, 8, 5)
+deaths_NZ <- c(0, 0, 0, 0, 0, 2, 3, 7,  8, 5)
 
 NewZealand <- data.frame(Age=age_NZ,
                          Cases=Tested_NZ,
@@ -65,11 +65,14 @@ NewZealand <- data.frame(Age=age_NZ,
 # analysis on disease severity extracted from:
 # https://www.thelancet.com/journals/lanwpc/article/PIIS2666-6065(20)30061-4/fulltext
 # Has clearly nested statistics, can be useful
+# Deaths from Severe COVID-19 Illness: Risk Factors and Its Burden on Critical Care Resources
 age_Korea <- c("0-10", "10-19", "20-29", "30-39", "40-49", "50-59",
             "60-69", "70-79", "80+")
 Tested_Korea <- c(89, 397, 2174, 780, 1037, 1490, 1007, 517, 312)
 ICU_Korea <- c(0, 0, 2, 4, 2, 26, 50, 82, 117)
 Hospitalized_Korea <- c(0, 1, 19, 14, 32, 128, 174, 199, 189)
+#deaths_Korea <- c(0, 0, 0, 2, 3, 15, 35, 76, 120)
+deaths_Korea2 <- c(0, 0, 0, 2, 1, 14, 36, 67, 107)
 
 Korea <- data.frame(Age=age_Korea,
                          Cases=Tested_Korea,
@@ -77,7 +80,7 @@ Korea <- data.frame(Age=age_Korea,
                          CasesH=NA,
                          Hospitalized=Hospitalized_Korea,
                          ICU=ICU_Korea,
-                         Deaths=NA,
+                         Deaths=deaths_Korea2,
                          Type="Testing",
                          Location="South_Korea",
                          EndPointOutcome="2020-04-30",
@@ -268,10 +271,10 @@ Sweden <- data.frame(Age=age_Sweden_outcome,
 age_France_outcome <- c("0-9", "10-19", "20-29", "30-39", "40-49", "50-59",
                 "60-69", "70-79", "80-89", "90+")
 
-ilDeFrance_inHosp <- c(26, 18, 96, 182, 360, 775, 1157, 1448, 1710, 1075)
-ilDeFrance_inICU <- c(6, 6, 16, 24, 50, 167, 194, 161, 25, 6)
-ilDeFrance_hospRecov <- c(263, 160, 738, 1719, 2734, 4186, 4577, 4027, 3613, 1669)
-ilDeFrance_hospDead <- c(2, 3, 12, 47, 128, 490, 1019, 1633, 2221, 1375)
+ilDeFrance_inHosp <- c(24, 16, 82, 151, 313, 669, 1025, 1296, 1520, 944)
+ilDeFrance_inICU <- c(5, 4, 16, 18, 45, 128, 161, 142, 23, 5)
+ilDeFrance_hospRecov <- c(274, 166, 758, 1754, 2800, 4302, 4748, 4188, 3861, 1835)
+ilDeFrance_hospDead <- c(2, 3, 12, 49, 132, 503, 1039, 1665, 2272, 1412)
 ilDeFrance_hospTot <- ilDeFrance_inHosp + ilDeFrance_hospDead + ilDeFrance_hospRecov
 
 Hospitalized_France <- c(ilDeFrance_hospTot[3:8], sum(ilDeFrance_hospTot[9:10]))
@@ -324,42 +327,79 @@ Ile_de_France <- data.frame(Age=age_France_outcome,
 
 # ICU data ICNARC report on COVID-19 in critical care 03 July 2020
 # Seroprevalence and population from Levin et al
-# Death data from Levin et al.
+# Death data from Levin et al. and https://www.england.nhs.uk/statistics/statistical-work-areas/covid-19-daily-deaths/
+# https://www.england.nhs.uk/statistics/statistical-work-areas/covid-19-daily-deaths/weekly-total-archive/
 # Hospital data https://coronavirus.data.gov.uk/details/download
-age_England_ICU <- c("16-30", "30-39", "40-49", "50-59", "60-69", "70-79", "80+")
-totICUEng <- 13025
+# Hospital 2 https://www.england.nhs.uk/statistics/statistical-work-areas/covid-19-hospital-activity/
+
+# England 1
+age_England_ICU <- c("16-30", "30-39", "40-49", "50-59", "60-69",
+                     "70-79", "80+")
+#totICUEng <- 13025
+totICUEng <- 10287
 propICUEng <- c(2.2, 5.8, 13.7, 27.7, 29.7, 18.0, 2.9)
 ICU_England <- round(propICUEng/100*totICUEng)
 
-age_England_death <- c("18-24", "25-34", "35-44", "45-54", "55-64",
+age_England_seroprev <- c("0-17", "18-24", "25-34", "35-44", "45-54", "55-64",
                        "65-74", "75+")
-deaths_England <- c(30, 131, 394, 1348, 3605, 7631, 38629)
+seroprev_England <- c(9.2, 7.9, 7.8, 6.1, 6.4, 5.9, 3.2, 3.3)
+seroprevL_England <- c(6.2, 7.3, 7.4, 5.7, 6.0, 5.5, 2.8, 2.9)
+seroprevH_England <- c(12.2, 8.5, 8.3, 6.6, 6.9, 6.4, 3.6, 3.8)
 
-age_England_seroprev <- c("18-24", "25-34", "35-44", "45-54", "55-64",
-                       "65-74", "75+")
-seroprev_England <- c(7.9, 7.8, 6.1, 6.4, 5.9, 3.2, 3.3)
-seroprevL_England <- c(7.3, 7.4, 5.7, 6.0, 5.5, 2.8, 2.9)
-seroprevH_England <- c(8.5, 8.3, 6.6, 6.9, 6.4, 3.6, 3.8)
-
-population_England <- c(4746616, 7609363, 7147939, 7623273, 6782486, 5576066,
-                4777650)
-
+population_England <- c(12023568, 4746616, 7609363, 7147939, 7623273, 6782486,
+                        5576066, 4777650)
 cases_England <- round(population_England*seroprev_England/100)
 casesL_England <- round(population_England*seroprevL_England/100)
 casesH_England <- round(population_England*seroprevH_England/100)
 
-England <- data.frame(Age=age_England_ICU,
-                         Cases=cases_England,
-                         CasesL=casesL_England,
-                         CasesH=casesH_England,
+# 5 of July deaths
+age_deaths_England1 <- c("20-39", "40-59", "60-79", "80+")
+deaths_England1 <- c(211, 2253, 11053, 15540)
+
+England1 <- data.frame(Age=age_England_ICU,
+                         Cases=cases_England[-1],
+                         CasesL=casesL_England[-1],
+                         CasesH=casesH_England[-1],
                          Hospitalized=NA,
                          ICU=ICU_England,
                          Deaths=NA,
                          Type="Seroprevalence",
                          Location="England",
+                         EndPointOutcome="2020-07-03",
+                         EndPointCases="2020-07-13")
+
+age_England_Hosp <- c("0-17", "18-64", "65-84", "85+")
+Hospitalized_England <- c(1188, 34584, 45724, 24204)
+Hospitalized_England2 <- c(Hospitalized_England[1:2], sum(Hospitalized_England[3:4]))
+
+age_England_death <- c("0-17", "18-24", "25-34", "35-44", "45-54", "55-64",
+                       "65-74", "75+")
+dethsTot_03July <- 36199
+dethsTot_31July <- 36686
+deaths_England <- c(11, 30, 131, 394, 1348, 3605, 7631, 38629)
+deaths_England2 <- c(deaths_England[1], sum(deaths_England[2:6]),
+                      sum(deaths_England[7:8]))
+cases_England2 <- c(cases_England[1], sum(cases_England[2:6]),
+                    sum(cases_England[7:8]))
+casesL_England2 <- c(casesL_England[1], sum(casesL_England[2:6]),
+                    sum(casesL_England[7:8]))
+casesH_England2 <- c(casesH_England[1], sum(casesH_England[2:6]),
+                    sum(casesH_England[7:8]))
+age_England2 <- c("0-17", "18-64", "65+")
+
+England2 <- data.frame(Age=age_England2,
+                         Cases=cases_England2,
+                         CasesL=casesL_England2,
+                         CasesH=casesH_England2,
+                         Hospitalized=Hospitalized_England2,
+                         ICU=NA,
+                         Deaths=deaths_England2,
+                         Type="Seroprevalence",
+                         Location="England",
                          EndPointOutcome="2020-05-26",
                          EndPointCases="2020-06-23")
 
+England <- rbind(England1, England2)
 
 ######################
 # Netherlands

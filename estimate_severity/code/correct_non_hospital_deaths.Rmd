@@ -1,0 +1,194 @@
+---
+title: "Correcting for deaths outside of hospital and ICU"
+author: Daniel Herrera
+output: pdf_document
+header-includes:
+  - \usepackage{setspace}\doublespacing
+  - \usepackage{float}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## Objective
+
+To estimate the age-stratified proportion of severe and critical
+cases among individuals infected with SARS-CoV-2 (ISR and ICR respectively),
+we identified countries with age-stratified seroprevalence
+studies that also report the age-stratified number of patients that
+were hospitalized (indicator of severe disease) or admitted
+to the ICU (indicator of critical disease). This allows us to
+estimate the ISR and ICR directly, by dividing the number of
+hospitalizations and ICU admissions by the estimated number of
+infected individuals.
+\newline
+
+However, one factor that may affect this procedure is that
+hospitalizations and ICU admissions may not fully reflect
+severe and critical cases. In particular, it is frequent for
+deaths in older patients to occur outside of the hospital or
+the ICU, thus constituting severe and critical cases that are
+not reported in the hospitalization numbers. To minimize
+the effect of this phenomenon in our estimations, we
+analyze to what extent COVID-19 deaths are not reported
+in hospitalization and ICU numbers across locations and
+ages, so as to correct for this phenomenon in our analysis.
+
+## Analysis of raw data
+
+```{r include=FALSE}
+source("value_adjusting.R")
+library(knitr)
+```
+
+
+### Data points with more deaths than ICU admissions
+
+```{r include=FALSE}
+moreDeaths <- countryData %>%
+  dplyr::mutate(., moreDeathsHosp=Deaths>Hospitalized,
+                moreDeathsICU=Deaths>ICU) %>%
+  dplyr::filter(., (moreDeathsHosp | moreDeathsICU) |
+  (is.na(moreDeathsHosp) & moreDeathsICU) |
+  (is.na(moreDeathsICU) & moreDeathsHosp))
+nLocs <- length(unique(countryData$Location))
+```
+
+Our dataset of countries with serology studies and
+hospitalization or ICU data contains `r nLocs` locations:
+`r unique(countryData$Location)`.
+\newline
+
+First we look for the most salient indicator of deaths outside of 
+the hospital or the ICU: populations were the number of reported deaths
+is higher than the number of reported hospitalizations or ICU admissions.
+We find that `r nrow(moreDeaths)` locations and ages that show
+this property (**Table 1**). Some of these points show a death
+count one order of magnitude larger than hospitalizations and
+ICU admissions (or two orders of magnitude in the case of England),
+underscoring the need to correct for deaths not
+included in hospital and ICU counts.
+
+```{r echo=FALSE}
+moreDeaths <- dplyr::select(moreDeaths, Age, Location, Hospitalized, ICU, Deaths)
+knitr::kable(moreDeaths, caption="Data points with more deaths than Hospitalizations or ICU")
+```
+
+```{r echo=FALSE}
+#
+hospMaxRatio <- countryLong %>%
+  dplyr::mutate(., ratio=Deaths/Outcome_count) %>%
+#  dplyr::filter(., str_detect(Age, "\\+") & !is.na(ratio) & (ratio<=1) &
+#                Outcome_type=="Hospitalized") %>% 
+  dplyr::filter(., (Age %in% c("80+", "85+")) & !is.na(ratio) & (ratio<=1) &
+                Outcome_type=="Hospitalized") %>% 
+  summarize(., meanRatio=mean(ratio), meanAge=mean(meanAge))
+fittedHosp <- dplyr::filter(lethalityPosterior, (meanAge==85) &
+                            (Outcome_type=="Hospitalized"))[["prop_mean"]]
+icuRatio <- countryLong %>%
+  dplyr::mutate(., ratio=Deaths/Outcome_count) %>%
+  dplyr::filter(., (meanAge<60) & (meanAge>=50) & !is.na(ratio) & (ratio<=1) &
+                Outcome_type=="ICU") %>% 
+  summarize(., meanRatio=mean(ratio), meanAge=mean(meanAge))
+fittedICU <- dplyr::filter(lethalityPosterior, meanAge==60 &
+                             Outcome_type=="ICU")[["prop_mean"]]
+ratioOfRatiosHosp <- round(fittedHosp/hospMaxRatio$meanRatio, digits=2)
+ratioOfRatiosICU <- round(fittedICU/icuRatio$meanRatio, digits=2)
+```
+
+### Ratio of deaths to hospitalizations in public data and in hospital mortality studies
+
+Next, we compared the ratio between deaths and hospitalization (or ICU)
+counts reported by the countries, to the reported in-hospital (or ICU)
+lethality in the literature. Since the ratio with public data takes into
+account all deaths, and the ratio of in-hospital studies take into
+account only hospital deaths, a deviation between the two may
+reflect the presence of deaths outside the hospital.
+\newline
+
+```{r echo=FALSE, warning=FALSE, fig1, fig.height=4.5, fig.width=9, fig.cap="Ratio of deaths to hospitalizations (left) and ICU admissions (right). Dots show the ratio for public data for different locations. The black line and shaded region show the fitted ratio for in-hospital and in-ICU lethality"}
+public_vs_expected_ratio
+```
+
+As can be seen in **Figure 1 (left)**, for most ages the ratio of
+deaths to hospitalizations is close to the in-hospital lethality
+fitted to several literature reports (black line and
+shaded region). Nonetheless, at the oldest ages, all the locations are
+above the fitted line, suggesting that for the oldest ages there
+are deaths outside of the hospital. For the ratio of deaths
+to ICU admissions (**Figure 1, right**), we see that almost all
+points across ages are above the ratio fitted to in-ICU mortality
+studies, indicating a widespread occurrence of deaths outside
+of the ICU.
+
+In particular, we can look at the ratio between the ratios shown in the plot
+(the in-hospital mortality and the ratio in public data) to approximate what
+proportion of deaths occurs in the hospital or ICU for each age, as
+shown in the following formula:
+$$
+\frac{Mortality_{Hospital}}{\left(\frac{Deaths_{Total}}{Hospitalizations}\right)} =
+\frac{\left(\frac{Deaths_{Hospital}}{Hospitalizations}\right)}{\left(\frac{Deaths_{Total}}{Hospitalizations}\right)} =
+\frac{Deaths_{Hospital}}{Deaths_{Total}}
+$$
+
+
+```{r echo=FALSE, warning=FALSE, fig2, fig.height=4.5, fig.width=9, fig.cap="Ratio of death to hospitalization (left) and ICU (right) in public data over the ratio as obtained from in-hospital or in-ICU mortality."}
+ratio_of_ratios
+```
+
+
+Taking the final age
+of each location, we get a mean ratio of `r round(hospMaxRatio$meanRatio*100)`%
+for a mean age of `r round(hospMaxRatio$meanAge)`. For comparison, the mean
+in-hospital mortality for that age is `r round(fittedHosp*100)`%,
+giving a ratio of ratios of `r ratioOfRatiosHosp`.
+ Taking the points in between 50 and 65 years, we get a mean
+age of `r round(icuRatio$meanAge)` and a deaths to ICU ratio of
+`r round(icuRatio$meanRatio*100)`%, compared to an in-ICU mortality
+of `r round(fittedICU*100)`% fitted for that age (a ratio of ratios
+of `r ratioOfRatiosICU`). This again shows that deaths outside
+of hospitals and ICU should be corrected for more unbiased estimates
+of ISR and ICR.
+
+
+
+## Locations with disaggregated death data
+
+Some locations have disaggregated data of total deaths and deaths in
+the hospital or ICU. We can compare these data to the ratios obtained
+in the previous section.
+
+We observe in Figure 2 the ratios of in-hospital (and in-ICU)
+deaths to total deaths for different countries and ages. We see that the
+different countries show a general agreement in the magnitude of the ratio
+between hospital and ICU deaths to total deaths. Furthermore, these numbers
+seem in general agreement with what is expected from comparing the
+observed deaths to hospitalization ratio in the previous section to
+the reported in-hospital (or in-ICU) mortality. For example, we reported
+that for the 50-59 year range the ratio of ratios is `r ratioOfRatiosICU`,
+while the ratio between ICU deaths and total deaths for the 50-59 age
+range for England is 0.45. The ratio of ratios for hospitalization
+deaths for 80+ was `r ratioOfRatiosHosp`, and the ratio of hospital
+deaths to total deaths at 80+ is 0.51 for England, and at 80-89
+is 0.34 for Netherlands.
+
+
+
+```{r echo=FALSE, warning=FALSE, fig3, fig.height=4.5, fig.width=11, fig.cap="Ratio of hospital (left) and ICU (right) deaths to the total reported deaths for each age stratum."}
+deathRatioPlot
+```
+
+```{r echo=FALSE}
+#knitr::kable(hospDeathDf, caption="Comparison of deaths in hospital and total reported deaths")
+```
+
+```{r echo=FALSE}
+#knitr::kable(icuDeathDf, caption="Comparison of deaths in ICU and total deaths")
+```
+
+
+
+
+
+

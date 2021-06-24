@@ -1,5 +1,4 @@
 library(dplyr)
-library(tidyr)
 library(lubridate)
 library(stringr)
 library(ggplot2)
@@ -21,6 +20,45 @@ mid_bin_age <- function(binsVec) {
   # extract last value
   return(ageBins)
 }
+
+# Take a demography dataframe and a vector indicating a
+# new subdivission, and return demography for the new division
+change_demography_bins <- function(demographyDf, newBins) {
+  midAges <- mid_bin_age(as.character(demographyDf$age))
+  newDemRow <- bin_ages(midAges, newBins)
+  newDemography <- dplyr::mutate(demographyDf, newBin = newDemRow) %>%
+    group_by(newBin) %>%
+    summarize(., proportion = sum(proportion)) %>%
+    ungroup(.) %>%
+    dplyr::mutate(age = newBins) %>%
+    dplyr::select(-newBin)
+  return(newDemography)
+}
+
+
+# take a vector with numbers and bin them as given in
+# binsVec. binsVec can be a character vector indicating
+# the ranges as "Xi-Xf" or a numeric vector indicating
+# the superior limits of the bins
+bin_ages <- function(agesVec, binsVec) {
+  if (is.character(binsVec)) {
+    ageBins <- strsplit(binsVec, "-") %>%
+      lapply(., as.numeric) %>%
+      unlist(.)
+    supInd <-seq(2, length(ageBins), by = 2)
+    ageBins <- ageBins[supInd]
+    if (any(is.na(ageBins))) {
+      ageBins <- ageBins[-which(is.na(ageBins))]
+    }
+    ageBins <- c(-1, ageBins, 200)
+  } else {
+    ageBins <- binsVec
+  }
+  indVec <- .bincode(agesVec, ageBins)
+  return(indVec)
+}
+
+
 
 get_bins_limits <- function(ageBins) {
   ageList <- strsplit(ageBins, "-") %>%
@@ -61,7 +99,10 @@ scaleFun <- function(x) sprintf("%1g", x)
 # Get posterior samples of bayesian fit
 proportion_samples <- function(model, ageVec,
                                slopeName="ageSlope",
-                               interceptName="intercept") {
+                               interceptName="intercept",
+                               meanAge=0,
+                               sdAge=1) {
+  stdAgeVec <- (ageVec-meanAge)/sdAge
   posterior <- rstan::extract(model)
   fitSampleMat <- matrix(nrow=length(ageVec), ncol=0)
   for (n in c(1:length(posterior[[1]]))) {
@@ -74,9 +115,12 @@ proportion_samples <- function(model, ageVec,
   meanProp <- rowMeans(fitSampleMat) 
   ciProp <- matrixStats::rowQuantiles(fitSampleMat, probs=c(0.025, 0.975))
   sampleVec <- sort(rep(c(1:ncol(fitSampleMat)), nrow(fitSampleMat)))
+  ageVecLong <- rep(ageVec, ncol(fitSampleMat))
+  ageIndVec <- rep(c(1:length(ageVec)), ncol(fitSampleMat))
 
   samplesDf <- data.frame(sample=sampleVec,
-                          proportion=as.vector(fitSampleMat))
+                          proportion=as.vector(fitSampleMat),
+                          age=ageVecLong, ageInd=ageIndVec)
   sampleList <- list(samples=samplesDf, prop_mean=meanProp,
                      prop_L=ciProp[,1], prop_H=ciProp[,2])
   return(sampleList)

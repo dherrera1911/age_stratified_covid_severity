@@ -1,0 +1,15 @@
+base
+rmarkdown
+dplyr
+tidyr
+ggplot2
+lubridate
+RColorBrewer
+wpp2019
+stringr
+ggpubr
+tidybayes
+StanHeaders
+rstan
+matrixStats
+knitr

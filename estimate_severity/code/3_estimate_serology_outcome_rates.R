@@ -34,21 +34,13 @@ for (no in c(1:length(outcome))) {
   sdAge[[oStr]] <- sd(outcomeData[[oStr]]$meanAge)
   outcomeData[[oStr]]$stdAge <- (outcomeData[[oStr]]$meanAge-meanAge[[oStr]])/sdAge[[oStr]]
 
-  # Do simple regression to use reasonable priors
-  outcomeVec <- outcomeData[[oStr]][[oStr]]
-  casesVec <- outcomeData[[oStr]][["Cases"]]
-  stdAge <- outcomeData[[oStr]][["stdAge"]]
-  priorReg[[oStr]] <- glm(cbind(outcomeVec, casesVec-outcomeVec) ~ stdAge,
-        family="binomial")
   # Put data input in list
   outcomeDataList[[oStr]] <- list(N=nrow(outcomeData[[oStr]]),
                     K=length(unique(outcomeData[[oStr]]$Location)),
                     location=outcomeData[[oStr]]$locationNum,
                     ageVec=outcomeData[[oStr]]$stdAge,
                     cases=outcomeData[[oStr]]$Cases,
-                    outcomes=outcomeData[[oStr]][[oStr]],
-                    slopePrior=priorReg[[oStr]]$coefficients[2],
-                    interceptPrior=priorReg[[oStr]]$coefficients[1])
+                    outcomes=outcomeData[[oStr]][[oStr]])
   # Fit model
   model[[oStr]] <- rstan::sampling(outcome_reg, data=outcomeDataList[[oStr]],
                              chains=4, iter=5000, refresh=0)

@@ -231,6 +231,25 @@ criticalFatalityRanzani <- data.frame(Age=age_Ranzani,
                                      EndPoint="2020-08-15")
 
 ##############
+# Oliveria, Florida
+##############
+# ICU outcomes and survival in patients with severe COVID-19 in the
+# largest health care system in central Florida
+age_Oliveira <- c("18-54", "55-64", "65-74", "75+")
+# absolute numbers are reported
+ICU_Oliveira <- c(41, 36, 34, 20)
+deaths_ICU_Oliveira <- c(3, 5, 8, 10)
+criticalFatalityOliveira <- data.frame(Age=age_Oliveira,
+                                     Patients=ICU_Oliveira,
+                                     Deaths=deaths_ICU_Oliveira,
+                                     Study="Oliveira",
+                                     Type="ICU",
+                                     Location="Florida, USA",
+                                     EndPoint="2020-05-18")
+
+
+
+##############
 # Pediatric Critical care, González-Dambrauskas et al
 ##############
 # Since the age of individual patients is given, we disagregated
@@ -379,7 +398,7 @@ severeFatalityBerenguer <- data.frame(Age=age_Berenguer,
                                   Study="Berenguer",
                                   Type="Hospitalized",
                                   Location="Spain",
-                                  EndPoint="2020-03-17")
+                                  EndPoint="2020-04-17")
 
 ###############
 # Maquilon, Chile
@@ -453,8 +472,10 @@ severeFatalityNetherlands <- data.frame(Age=age_Netherlands,
 # Put together studies on hospitalized populations
 #####################
 controledStudies <- rbind(criticalFatalityICNARC, criticalFatalityCummings,
-                          criticalFatalityREVA, criticalFatalityRanzani,
+                          criticalFatalityREVA,
+                          criticalFatalityRanzani,
                           criticalFatalityGonzalez, criticalFatalityPrata,
+                          criticalFatalityOliveira,
                           severeFatalityRichardson, severeFatalityKaragiannidis,
                           severeFatalitySalje, severeFatalityNetherlands,
                           severeFatalityRanzani, severeFatalityDocherty,
