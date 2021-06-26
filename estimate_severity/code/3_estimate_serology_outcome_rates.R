@@ -9,9 +9,14 @@ source("./functions_auxiliary.R")
 source("./stan_utility.R")
 set.seed(2961)
 
-countryData <- read.csv("../data/collected_data/locations_serology_data.csv",
+#countryData <- read.csv("../data/collected_data/locations_serology_data.csv",
+#                        stringsAsFactors=FALSE) %>%
+#  as_tibble(.)
+countryData <- read.csv("../data/collected_data/locations_serology_data_corrected.csv",
                         stringsAsFactors=FALSE) %>%
   as_tibble(.)
+
+savingName <- "../data/processed_data/3_serology_fits_corrected.RDS"
 
 outcome_reg <- rstan::stan_model("./3_estimate_serology_outcome_rates.stan")
 
@@ -51,5 +56,5 @@ for (no in c(1:length(outcome))) {
 modelList <- list(model=model, locationKey=locationKey,
                   meanAge=meanAge, sdAge=sdAge)
 
-saveRDS(modelList, "../data/processed_data/3_serology_fits.RDS")
+saveRDS(modelList, savingName)
 

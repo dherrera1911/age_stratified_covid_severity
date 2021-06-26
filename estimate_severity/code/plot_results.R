@@ -24,10 +24,19 @@ sampleLineAlpha=0.1
 ############################
 
 # load data and models
-countryData <- read.csv("../data/collected_data/locations_serology_data.csv",
+#countryData <- read.csv("../data/collected_data/locations_serology_data.csv",
+#                        stringsAsFactors=FALSE) %>%
+#  as_tibble(.)
+#serologyModels <- readRDS("../data/processed_data/3_serology_fits.RDS")
+#serologyPlotName <- "../data/plots/3_serology_regression.png"
+#serologySamplesPlotName <- "../data/plots/3_serology_samples.png"
+countryData <- read.csv("../data/collected_data/locations_serology_data_corrected.csv",
                         stringsAsFactors=FALSE) %>%
   as_tibble(.)
-serologyModels <- readRDS("../data/processed_data/3_serology_fits.RDS")
+serologyModels <- readRDS("../data/processed_data/3_serology_fits_corrected.RDS")
+serologyPlotName <- "../data/plots/3_serology_regression_corrected.png"
+serologySamplesPlotName <- "../data/plots/3_serology_samples_corrected.png"
+serologyCsvName <- "../data/processed_data/3_serology_fits_corrected.csv"
 
 # predefine some variables
 outcome <- c("Hospitalized", "ICU", "Deaths")
@@ -81,8 +90,7 @@ serologyPlot <- longCountryData %>%
   xlab("Age") +
   ylab("% outcome")
 
-ggsave("../data/plots/3_serology_regression.png", serologyPlot,
-       width=30, height=10, units="cm")
+ggsave(serologyPlotName, serologyPlot, width=30, height=10, units="cm")
 
 
 serologySamplesDf$Outcome_type <- factor(serologySamplesDf$Outcome_type,
@@ -102,8 +110,14 @@ serologySamplesPlot <- serologySamplesDf %>%
   xlab("Age") +
   ylab("% outcome")
 
-ggsave("../data/plots/3_serology_samples.png", serologySamplesPlot,
+ggsave(serologySamplesPlotName, serologySamplesPlot,
        width=29, height=10, units="cm")
+
+exportFit <- dplyr::mutate(outcomeFitDf, Percentage=signif(outcomeProp*100, digits=3),
+                           Percentage_L=signif(outcome_L*100, digits=3),
+                           Percentage_H=signif(outcome_H*100, digits=3)) %>%
+  dplyr::select(., -outcomeProp, -outcome_L, -outcome_H)
+write.csv(exportFit, file=serologyCsvName, row.names=FALSE)
 
 ############################
 ############################

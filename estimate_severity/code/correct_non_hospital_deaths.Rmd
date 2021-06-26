@@ -138,28 +138,13 @@ ratio_of_ratios
 ```
 
 
-Taking the final age
-of each location, we get a mean ratio of `r round(hospMaxRatio$meanRatio*100)`%
-for a mean age of `r round(hospMaxRatio$meanAge)`. For comparison, the mean
-in-hospital mortality for that age is `r round(fittedHosp*100)`%,
-giving a ratio of ratios of `r ratioOfRatiosHosp`.
- Taking the points in between 50 and 65 years, we get a mean
-age of `r round(icuRatio$meanAge)` and a deaths to ICU ratio of
-`r round(icuRatio$meanRatio*100)`%, compared to an in-ICU mortality
-of `r round(fittedICU*100)`% fitted for that age (a ratio of ratios
-of `r ratioOfRatiosICU`). This again shows that deaths outside
-of hospitals and ICU should be corrected for more unbiased estimates
-of ISR and ICR.
-
-
-
 ## Locations with disaggregated death data
 
 Some locations have disaggregated data of total deaths and deaths in
 the hospital or ICU. We can compare these data to the ratios obtained
 in the previous section.
 
-We observe in Figure 2 the ratios of in-hospital (and in-ICU)
+We observe in Figure 3 the ratios of in-hospital (and in-ICU)
 deaths to total deaths for different countries and ages. We see that the
 different countries show a general agreement in the magnitude of the ratio
 between hospital and ICU deaths to total deaths. Furthermore, these numbers
@@ -188,6 +173,9 @@ deathRatioPlot
 ```
 
 
+## Correction outcome data from locations with serology studies
+
+In order to 
 
 
 
