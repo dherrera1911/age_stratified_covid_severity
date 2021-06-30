@@ -67,7 +67,8 @@ hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.
                        stringsAsFactors=FALSE, sep=";") %>%
   as_tibble(.) %>%
   dplyr::filter(., (Hospital_admission=="Yes" | Deceased=="Yes") &
-                (lubridate::date(Date_statistics)<="2020-09-01")) %>%
+                #(lubridate::date(Date_statistics)<="2020-09-01")) %>%
+                (lubridate::date(Date_statistics)<="2020-04-11")) %>%
   group_by(., Agegroup) %>%
   summarize(., nHosp=sum((Hospital_admission=="Yes")),
             nDead=sum(Deceased=="Yes"),
@@ -139,6 +140,17 @@ deaths_NZ <- c(0, 0, 0, 0, 0, 3, 3, 7, 8, 5)
 countryDataMod[countryDataMod$Location=="New_Zealand",][["Hospitalized"]] <- Hospitalized_NZ
 countryDataMod[countryDataMod$Location=="New_Zealand",][["ICU"]] <- ICU_NZ
 countryDataMod[countryDataMod$Location=="New_Zealand",][["Deaths"]] <- deaths_NZ
+
+#######################
+# Substitute critical and severe for hospital and ICU in Iceland
+#######################
+oohDeaths_Iceland <- c(0, 0, 0, 0, 0, 0, 0, 0, 2)
+ooiDeaths_Iceland <- c(0, 0, 0, 0, 0, 0, 0, 1, 4)
+
+countryDataMod[countryDataMod$Location=="Iceland",][["Hospitalized"]] <- 
+  countryDataMod[countryDataMod$Location=="Iceland",][["Hospitalized"]] - oohDeaths_Iceland
+countryDataMod[countryDataMod$Location=="Iceland",][["ICU"]] <-
+  countryDataMod[countryDataMod$Location=="Iceland",][["ICU"]] - ooiDeaths_Iceland
 
 
 #################################################
@@ -303,7 +315,8 @@ hospDataNL <- read.csv("../downloaded_data/netherlands/COVID-19_casus_landelijk.
                        stringsAsFactors=FALSE, sep=";") %>%
   as_tibble(.) %>%
   dplyr::filter(., (Hospital_admission=="Yes" | Deceased=="Yes") &
-                (lubridate::date(Date_statistics)<="2020-09-01")) %>%
+                #(lubridate::date(Date_statistics)<="2020-09-01")) %>%
+                (lubridate::date(Date_statistics)<="2020-04-11")) %>%
   group_by(., Agegroup) %>%
   summarize(., nHosp=sum((Hospital_admission=="Yes")),
             nDead=sum(Deceased=="Yes"),
@@ -373,6 +386,11 @@ deathRatioPlot <- ggarrange(plotlist=list(hospDeathRatioPlot, icuDeathRatioPlot)
 unique(countryData$Location)
 
 #########
+# Iceland no change needed due to good data
+#########
+iceland <- filter(countryData, Location=="Iceland")
+
+#########
 # New Zealand no change needed due to good data
 #########
 newZealand <- filter(countryData, Location=="New_Zealand")
@@ -404,6 +422,7 @@ for (s in unique(mortHospSpain$samples$sample)) {
   oohProp <- (1-pmin(1, sampleMort$proportion/spain$hospDeathRatio))
   spainHospRatioSamp <- cbind(spainHospRatioSamp, oohProp)
 }
+
 meanHospRatioSpain <- rowMeans(spainHospRatioSamp)
 quantsHospRatioSpain <- matrixStats::rowQuantiles(spainHospRatioSamp, probs=c(0.025, 0.975))
 newHospSpain <- round(spain$Hosp + spain$Deaths*meanHospRatioSpain)
@@ -613,11 +632,51 @@ newHospNYC <- round(nyc$Hosp + nyc$Deaths*meanHospRatioNYC)
 
 nyc$Hospitalized <- newHospNYC
 
+
+############
+# Ontario
+############
+ontario <- filter(countryData, Location=="Ontario") %>%
+  dplyr::mutate(., hospDeathRatio=Deaths/Hospitalized,
+                icuDeathRatio=Deaths/ICU)
+
+mortHospOntario <- proportion_samples(model=lethalityModels$model$Hospitalized,
+                               ageVec=ontario$meanAge,
+                               meanAge=lethalityModels$meanAge$Hospitalized,
+                               sdAge=lethalityModels$sdAge$Hospitalized)
+ontarioHospRatioSamp <- matrix(nrow=nrow(ontario), ncol=0)
+for (s in unique(mortHospOntario$samples$sample)) {
+  sampleMort <- dplyr::filter(mortHospOntario$samples, sample==s)
+  oohProp <- (1-pmin(1, sampleMort$proportion/ontario$hospDeathRatio))
+  ontarioHospRatioSamp <- cbind(ontarioHospRatioSamp, oohProp)
+}
+meanHospRatioOntario <- rowMeans(ontarioHospRatioSamp)
+quantsHospRatioOntario <- matrixStats::rowQuantiles(ontarioHospRatioSamp, probs=c(0.025, 0.975))
+newHospOntario <- round(ontario$Hosp + ontario$Deaths*meanHospRatioOntario)
+
+mortICUOntario <- proportion_samples(model=lethalityModels$model$ICU,
+                               ageVec=ontario$meanAge,
+                               meanAge=lethalityModels$meanAge$ICU,
+                               sdAge=lethalityModels$sdAge$ICU)
+ontarioICURatioSamp <- matrix(nrow=nrow(ontario), ncol=0)
+for (s in unique(mortICUOntario$samples$sample)) {
+  sampleMort <- dplyr::filter(mortICUOntario$samples, sample==s)
+  ooiProp <- (1-pmin(1, sampleMort$proportion/ontario$icuDeathRatio))
+  ontarioICURatioSamp <- cbind(ontarioICURatioSamp, ooiProp)
+}
+meanICURatioOntario <- rowMeans(ontarioICURatioSamp)
+quantsICURatioOntario <- matrixStats::rowQuantiles(ontarioICURatioSamp, probs=c(0.025, 0.975))
+newICUOntario <- round(ontario$ICU + ontario$Deaths*meanICURatioOntario)
+
+ontario$Hospitalized <- newHospOntario
+ontario$ICU <- newICUOntario
+
 ##############
 # Put corrected locations together
 ##############
-locationsList <- list(newZealand, southKorea, spain, ireland, ireland,
-                      sweden, france, england, netherlands, atlanta, nyc)
+locationsList <- list(iceland, newZealand, southKorea, spain, ireland,
+                      ireland, sweden, france, england, netherlands,
+                      atlanta, nyc, ontario)
 
 correctedDf <- data.frame()
 for (l in c(1:length(locationsList))) {

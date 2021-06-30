@@ -40,6 +40,7 @@ ages, so as to correct for this phenomenon in our analysis.
 ```{r include=FALSE}
 source("value_adjusting.R")
 library(knitr)
+#
 ```
 
 
@@ -124,13 +125,16 @@ of the ICU.
 
 In particular, we can look at the ratio between the ratios shown in the plot
 (the in-hospital mortality and the ratio in public data) to approximate what
-proportion of deaths occurs in the hospital or ICU for each age, as
-shown in the following formula:
-$$
-\frac{Mortality_{Hospital}}{\left(\frac{Deaths_{Total}}{Hospitalizations}\right)} =
+proportion of deaths occurs in the hospital (deaths in hospital rate, or DHR)
+or ICU (deaths in ICU rate, or DIR) for each age. The formula for DHR is
+shown below, and the formula for DIR is analogous:
+
+\begin{equation}
+\label{DHR}
+DHR = \frac{Mortality_{Hospital}}{\left(\frac{Deaths_{Total}}{Hospitalizations}\right)} =
 \frac{\left(\frac{Deaths_{Hospital}}{Hospitalizations}\right)}{\left(\frac{Deaths_{Total}}{Hospitalizations}\right)} =
 \frac{Deaths_{Hospital}}{Deaths_{Total}}
-$$
+\end{equation}
 
 
 ```{r echo=FALSE, warning=FALSE, fig2, fig.height=4.5, fig.width=9, fig.cap="Ratio of death to hospitalization (left) and ICU (right) in public data over the ratio as obtained from in-hospital or in-ICU mortality."}
@@ -173,10 +177,77 @@ deathRatioPlot
 ```
 
 
-## Correction outcome data from locations with serology studies
+## Correction of data of critical and severe outcomes
 
-In order to 
+In order to correct for deaths outside of the hospital and ICU, thus
+counting them as severe and critical cases, we estimated from the total
+number of deaths for a given location and age, how many occurred inside the
+hospital or the ICU, and how many occurred outside. Then, we added the
+number of deaths estimated to occur outside of the hospital or the ICU
+to the count of severe or critical cases, respectively. This procedure was
+not applied in countries where the data allowed to discriminate
+between deaths inside and outside of the hospital or ICU.
 
+For this procedure, we first computed the DHR and DIR for each location and age
+with Equation \ref{DHR}, using the individual samples of the bayesian model
+fitted to hospital or ICU mortality. In this procedure, we set all
+samples with a DHR>1 to DHR=1. Then, we average the sampled DHRs and
+estimate the number of deaths outside the hospital (outside of hospital deaths,
+or OHD) for each age (A) and location (L) as:
 
+\begin{equation}
+\label{OHD}
+OHD^{L}_{A} = DHR^{L}_{A}\times Deaths^{L}_{A}
+\end{equation}
+
+We then add these estimated deaths to the severe cases. The same procedure is
+applied for out of ICU deaths and critical cases. Importantly, the number of
+severe or critical cases that this procedure adds to a given location and age
+is bounded by the number of deaths at that location and age. For young and
+middle-aged populations, the number of deaths is much smaller than the number
+of hospitalizations and ICU admissions, and thus this procedure does not
+change the number of severe and critical cases substantially.
+
+In line with this, as can be seen in Figure 4, the proportion of severe
+and critical outcomes remain largely unchanged by the correction procedure
+for younger and middle age populations. Also, as could be expected from the
+analysis seen in Figures 1 and 2, the change is very small across all ages
+for severe disease. Thus, as could be expected from the analyses above,
+we see that the data points most affected by the procedure are those
+corresponding to critical disease outcome in older age individuals.
+
+```{r echo=FALSE, warning=FALSE, fig4, fig.height=6, fig.width=9, fig.cap="Percentage of infections that develop severe (top) and critical (bottom) disease, with the correction for out of hospital and out of ICU deaths applied (left) or without the correction (right)"}
+outcome <- c("Hospitalized", "ICU", "Deaths")
+longCountryData <- tidyr::pivot_longer(data=countryData, 
+                                       cols=all_of(outcome),
+                                       names_to="Outcome_type",
+                                       values_to="Outcomes") %>%
+  dplyr::filter(., !is.na(Outcomes) & (Outcome_type!="Deaths")) %>%
+  dplyr::mutate(., Location=factor(Location), Status="Not-corrected")
+longCountryData$Outcome_type <- factor(longCountryData$Outcome_type,
+                                       levels=outcome[-3])
+longCountryData_corrected <- tidyr::pivot_longer(data=correctedDf, 
+                                       cols=all_of(outcome),
+                                       names_to="Outcome_type",
+                                       values_to="Outcomes") %>%
+  dplyr::filter(., !is.na(Outcomes) & (Outcome_type!="Deaths")) %>%
+  dplyr::mutate(., Location=factor(Location), Status="Corrected")
+longCountryData_corrected$Outcome_type <- factor(longCountryData_corrected$Outcome_type,
+                                       levels=outcome[-3])
+
+allData <- rbind(longCountryData, longCountryData_corrected)
+
+serologyPlot <- allData %>%
+  ggplot(., aes(x=meanAge, y=Outcomes*100/(Population*Prevalence/100), color=Location,
+                linetype=Type, facet=Outcome_type)) +
+  geom_point(aes(shape=Type), size=locPointSize) +
+  geom_line(alpha=locLineAlpha, size=locLineSize) +
+  facet_grid(Outcome_type~Status) +
+  scale_y_continuous(trans='log10', labels=scaleFun) +
+  theme_bw() +
+  xlab("Age") +
+  ylab("% outcome")
+serologyPlot
+```
 
 

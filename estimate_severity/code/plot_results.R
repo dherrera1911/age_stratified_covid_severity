@@ -40,6 +40,7 @@ serologyCsvName <- "../data/processed_data/3_serology_fits_corrected.csv"
 
 # predefine some variables
 outcome <- c("Hospitalized", "ICU", "Deaths")
+
 ageVec <- seq(2.5, 90, 5)
 serologyPosterior <- list()
 outcomeFitDf <- NULL
@@ -73,8 +74,14 @@ longCountryData$Outcome_type <- factor(longCountryData$Outcome_type,
 outcomeFitDf$Outcome_type <- factor(outcomeFitDf$Outcome_type,
                                        levels=outcome)
 
+
+# https://www.sciencemag.org/news/2021/06/israel-reports-link-between-rare-cases-heart-inflammation-and-covid-19-vaccination
+myocarditisProp <- c(1/6000, 1/3000)
+ageRangeMyo <- c(16, 24)
+ageMeanMyo <- mean(ageRangeMyo)
+
 serologyPlot <- longCountryData %>%
-  ggplot(., aes(x=meanAge, y=Outcomes/Cases*100, color=Location,
+  ggplot(., aes(x=meanAge, y=Outcomes*100/(Population*Prevalence/100), color=Location,
                 linetype=Type, facet=Outcome_type)) +
   geom_point(aes(shape=Type), size=locPointSize) +
   geom_line(alpha=locLineAlpha, size=locLineSize) +
@@ -86,6 +93,9 @@ serologyPlot <- longCountryData %>%
               aes(x=meanAge, ymin=outcome_L*100, ymax=outcome_H*100),
               alpha=ribbonAlpha, colour=NA, show.legend=FALSE,
               inherit.aes=FALSE) +
+  geom_segment(aes(x=ageMeanMyo, xend=ageMeanMyo, y=myocarditisProp[1]*100,
+                   yend=myocarditisProp[2]*100), color="black",
+               size=2) +
   theme_bw() +
   xlab("Age") +
   ylab("% outcome")
@@ -259,13 +269,13 @@ mainParams <- c("ageSlope", "ageSlopeSigma", "intercept", "interceptSigma")
 ############
 outcome <- c("Hospitalized", "ICU", "Deaths")
 x1 <- seq(-1, 5, 0.02)
-prior_ageSlope <- data.frame(value=x1, dens=gaussian(x1, mu=1, sigma=2),
+prior_ageSlope <- data.frame(value=x1, dens=gaussian(x1, mu=2, sigma=1),
                              .variable="ageSlope")
 x2 <- seq(0, 4.5, 0.02)
 prior_ageSlopeSigma <- data.frame(value=x2, dens=exponential(x2, lambda=0.5),
                                   .variable="ageSlopeSigma")
 x3 <- seq(-8, 0, 0.02)
-prior_intercept <- data.frame(value=x3, dens=gaussian(x3, mu=-5, sigma=2),
+prior_intercept <- data.frame(value=x3, dens=gaussian(x3, mu=-6, sigma=2),
                               .variable="intercept")
 x4 <- seq(0, 4.5, 0.02)
 prior_interceptSigma <- data.frame(value=x4, dens=exponential(x4, lambda=0.5),
@@ -305,6 +315,7 @@ ggsave("../data/plots/3_serology_param_posterior.png", posteriorSerologyPlot,
 
 ggsave("../data/plots/3_serology_chains.png", serologyTrace, 
        width=30, height=20, units="cm")
+
 
 
 ############

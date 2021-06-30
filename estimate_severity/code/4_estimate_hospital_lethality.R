@@ -13,7 +13,7 @@ lethalityData <- read.csv("../data/collected_data/hospitalized_patient_studies.c
                         stringsAsFactors=FALSE) %>%
   as_tibble(.)
 
-outcome_reg <- rstan::stan_model("./3_estimate_serology_outcome_rates.stan")
+outcome_reg <- rstan::stan_model("./4_estimate_hospital_lethality.stan")
 
 #############################
 # Fit hospital lethality by age
@@ -33,7 +33,7 @@ hospLethList <- list(N=nrow(hospLeth),
                   location=hospLeth$locationNum,
                   ageVec=hospLeth$stdAge,
                   cases=hospLeth$Patients,
-                  outcomes=hospLeth$Deaths)
+                 outcomes=hospLeth$Deaths)
 
 # Compile and run model
 hospLethFit <- rstan::sampling(outcome_reg, data=hospLethList,

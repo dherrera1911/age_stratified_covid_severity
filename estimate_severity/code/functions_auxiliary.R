@@ -92,6 +92,22 @@ binomial_confint <- function(countTotal, occurrences, input="count"){
   confintList <- list(lower=lower, upper=upper)
 }
 
+
+extract_country_population <- function(popM, popF, countryName, ageBins) {
+  countryPopM <- dplyr::filter(popM, name==countryName) %>%
+    dplyr::select(., age, "2020")
+  countryPopF <- dplyr::filter(popF, name==countryName) %>%
+    dplyr::select(age, "2020")
+  countryPop <- data.frame(age=countryPopM$age,
+                         pop=(countryPopM[["2020"]]+countryPopF[["2020"]])*1000)
+  countryPop$proportion <- countryPop$pop # rename pop to proportion so function works 
+  countryPop <- change_demography_bins(countryPop, ageBins) %>%
+    rename(., pop=proportion)
+  return(round(countryPop$pop))
+}
+
+
+
 # function used for plotting log axis
 scaleFun <- function(x) sprintf("%1g", x)
 
